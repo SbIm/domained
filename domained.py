@@ -179,7 +179,6 @@ def knockpy():
     rootdomainStrip = domain.replace(".", "_")
     knockpyFilenameInit = "{}_knock.csv".format(output_base)
     os.system("mv {}* {}".format(rootdomainStrip, knockpyFilenameInit))
-    os.system("mv {}* {}".format(rootdomainStrip, knockpyFilenameInit))
     time.sleep(1)
     knockpySubs = []
     try:
