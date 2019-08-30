@@ -146,11 +146,14 @@ def massdns():
     word_file = os.path.join(
         script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
     )
-    massdnsCMD = "python {} {} {} | {} -r resolvers.txt -t A -o S -w {}-massdns.txt".format(
-        os.path.join(script_path, "bin/subbrute/subbrute.py"),
+ 
+    massdnsCMD = "python {} {} {} | {} -r {}/resolvers.txt -t A -o S -w {}/{}_massdns.txt".format(
+        os.path.join(script_path, "bin/massdns/scripts/subbrute.py"),
         word_file,
         domain,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
+        script_path,
+        script_path,
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
