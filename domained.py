@@ -138,6 +138,14 @@ def enumall():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(enumallCMD))
     os.system(enumallCMD)
     print("\n\033[1;31menumall Complete\033[1;37m")
+    movcsvCMD = "cp {}/{}.csv {}/output/{}_enumall.csv".format(
+        script_path, domain, script_path, domain
+    )
+    movlstCMD = "cp {}/{}.lst {}/output/{}_enumall.lst".format(
+        script_path, domain, script_path, domain
+    )
+    os.system(movcsvCMD)
+    os.system(movlstCMD)
     time.sleep(1)
 
 
@@ -146,7 +154,6 @@ def massdns():
     word_file = os.path.join(
         script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
     )
- 
     massdnsCMD = "python {} {} {} | {} -r {}/resolvers.txt -t A -o S -w {}/{}_massdns.txt".format(
         os.path.join(script_path, "bin/massdns/scripts/subbrute.py"),
         word_file,
@@ -177,10 +184,15 @@ def knockpy():
     try:
         with open(knockpyFilenameInit, "rt") as f:
             reader = csv.reader(f, delimiter=",")
+            print(reader)
+            print(f)
             for row in reader:
+                print(row)
                 knockpySubs.append(row[3])
         filenameKnocktxt = "{}.txt".format(knockpyFilenameInit)
+        print("c")
         f1 = open(filenameKnocktxt, "w")
+        print("d")
         for hosts in knockpySubs:
             hosts = "".join(hosts)
             f1.writelines("\n" + hosts)
@@ -279,6 +291,7 @@ def writeFiles(name):
     fileName = output_base + "_" + name + fileExt[name]
 
     print("\n Opening %s File" % name)
+    print("\n path is %s " % fileName)
     try:
         with open(fileName, "r") as f:
             SubHosts = f.read().splitlines()
@@ -287,6 +300,13 @@ def writeFiles(name):
             f.writelines("\n\n" + name)
             for hosts in SubHosts:
                 hosts = "".join(hosts)
+                if name == "massdns":
+                    print("do sth")
+                    domainIndex = hosts.find(domain)
+                    hosts = hosts[:domainIndex+len(domain)]
+                elif name == "subfinder":
+                    if hosts.startswith('.'):
+                        hosts = hosts[1:]
                 f.writelines("\n" + hosts)
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
@@ -319,6 +339,7 @@ def subdomainfile():
                     uniqueDomainsOut.writelines("http://{}\n".format(domains))
                     if ports is not False:
                         uniqueDomainsOut.writelines("http://{}:8080\n".format(domains))
+        uniqueDomainsOut.close()
     time.sleep(1)
     rootdomainStrip = domain.replace(".", "_")
     print("\nCleaning Up Old Files\n")
@@ -419,11 +440,11 @@ def options():
                 amass()
                 subfinder()
             elif bruteforce:
-                massdns()
-                sublist3r()
+                #massdns()
+                #sublist3r()
                 enumall()
-                amass()
-                subfinder()
+                #amass()
+                #subfinder()
             else:
                 sublist3r(True)
                 enumall()

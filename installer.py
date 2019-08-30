@@ -61,7 +61,7 @@ def upgradeFiles():
     print("\nJHaddix All Domain List Installed\n")
     os.system(sublstUpgrade)
     SLsublstUpgrade = "wget -O ./bin/sublst/sl-domains.txt https://raw.githubusercontent.com/\
-    danielmiessler/SecLists/master/Discovery/DNS/sortedcombied-knock-dnsrecon-fierce-reconng.txt"
+danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierce-reconng.txt"
     print("\n\033[1;31mCopying SecList Domain List \033[1;37m")
     print("\nSecList Domain List Installed\n")
     os.system(SLsublstUpgrade)
@@ -77,13 +77,16 @@ def upgradeFiles():
     subfinderUpgrade = "go get -u -v github.com/subfinder/subfinder"
     print("\n\033[1;31mInstalling Subfinder \033[1;37m")
     os.system(subfinderUpgrade)
-    massdnsUpgrade = "git clone --branch v0.2 --single-branch https://github.com/blechschmidt/massdns ./bin/massdns"
+    massdnsUpgrade = "git clone --branch master --single-branch https://github.com/blechschmidt/massdns ./bin/massdns"
     print("\n\033[1;31mInstalling massdns \033[1;37m")
     os.system(massdnsUpgrade)
     massdnsMake = "make -C ./bin/massdns"
     os.system(massdnsMake)
     print("\nMassdns Installed\n")
     os.system("cp ./bin/subbrute/resolvers.txt ./")
+    print("\nInstall altdns")
+    os.system("pip install py-altdns")
+
 
     if "kali" in unameChk:
         reconNGInstall = "apt-get install recon-ng"
