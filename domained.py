@@ -310,6 +310,8 @@ def writeFiles(name):
                 f.writelines("\n" + hosts)
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
+        enumall_csv_name = output_base + "_" + name + ".csv"
+        os.remove(enumall_csv_name)
         print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
     except:
         print("\nError Opening %s File!\n" % name)
@@ -327,19 +329,22 @@ def subdomainfile():
     with open(subdomainAllFile, "r") as domainList:
         uniqueDomains = set(domainList)
         domainList.close()
-        subdomainUniqueFile = "{}-unique.txt".format(output_base)
+        subdomainUrlUniqueFile = "{}-unique.txt".format(output_base)
+        subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
+        uniqueDomainsUrlOut = open(subdomainUrlUniqueFile, "w")
         uniqueDomainsOut = open(subdomainUniqueFile, "w")
         for domains in uniqueDomains:
             domains = domains.replace("\n", "")
             if domains.endswith(domain):
-                uniqueDomainsOut.writelines("https://{}\n".format(domains))
+                uniqueDomainsOut.writelines(domains)
+                uniqueDomainsUrlOut.writelines("https://{}\n".format(domains))
                 if ports is not False:
-                    uniqueDomainsOut.writelines("https://{}:8443\n".format(domains))
+                    uniqueDomainsUrlOut.writelines("https://{}:8443\n".format(domains))
                 if secure is False:
-                    uniqueDomainsOut.writelines("http://{}\n".format(domains))
+                    uniqueDomainsUrlOut.writelines("http://{}\n".format(domains))
                     if ports is not False:
-                        uniqueDomainsOut.writelines("http://{}:8080\n".format(domains))
-        uniqueDomainsOut.close()
+                        uniqueDomainsUrlOut.writelines("http://{}:8080\n".format(domains))
+        uniqueDomainsUrlOut.close()
     time.sleep(1)
     rootdomainStrip = domain.replace(".", "_")
     print("\nCleaning Up Old Files\n")
@@ -366,9 +371,9 @@ def vpncheck():
         time.sleep(5)
 
 
-def notified():
-    notifySub = "domained Script Finished"
-    notifyMsg = "domained Script Finished for {}".format(domain)
+def notified(sub, msg):
+    notifySub = sub
+    notifyMsg = msg
     Config = configparser.ConfigParser()
     Config.read(os.path.join(script_path, "ext/notifycfg.ini"))
     if (Config.get("Pushover", "enable")) == "True":
@@ -436,15 +441,20 @@ def options():
         upgradeFiles()
     else:
         if domain:
+            # clean old results
+            os.system("rm -dfr {}*".format(output_base))
+            # notify domained begins
+            if notify:
+                notified("domained Script Started", "domained Script Started for {}".format(domain))
             if quick:
                 amass()
                 subfinder()
             elif bruteforce:
-                #massdns()
-                #sublist3r()
-                #enumall()
+                massdns()
+                sublist3r()
+                enumall()
                 amass()
-                #subfinder()
+                subfinder()
             else:
                 sublist3r(True)
                 enumall()
@@ -453,7 +463,7 @@ def options():
                 subfinder()
             subdomainfile()
             if notify:
-                notified()
+                notified("domained Script Finished", "domained Script Finished for {}".format(domain))
         else:
             print("\nPlease provide a domain. Ex. -d example.com")
     print("\n\033[1;34mAll your subdomain are belong to us\033[1;37m")
