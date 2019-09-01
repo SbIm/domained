@@ -336,7 +336,7 @@ def subdomainfile():
         for domains in uniqueDomains:
             domains = domains.replace("\n", "")
             if domains.endswith(domain):
-                uniqueDomainsOut.writelines(domains)
+                uniqueDomainsOut.writelines("{}\n".format(domains))
                 uniqueDomainsUrlOut.writelines("https://{}\n".format(domains))
                 if ports is not False:
                     uniqueDomainsUrlOut.writelines("https://{}:8443\n".format(domains))
@@ -354,7 +354,7 @@ def subdomainfile():
     except:
         print("\nError Removing Files!\n")
     if not noeyewitness:
-        eyewitness(subdomainUniqueFile)
+        eyewitness(subdomainUrlUniqueFile)
 
 
 def vpncheck():
