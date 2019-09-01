@@ -126,13 +126,13 @@ def sublist3r(brute=False):
     os.system(Subcmd)
     print("\n\033[1;31mSublist3r Complete\033[1;37m")
     time.sleep(1)
-    if brute:
-        eyewitness(sublist3rFileName)
+    #if brute:
+    #    eyewitness(sublist3rFileName)
 
 
 def enumall():
     print("\n\n\033[1;31mRunning Enumall \n\033[1;37m")
-    enumallCMD = "python {} {}".format(
+    enumallCMD = "python {} {} -a".format(
         os.path.join(script_path, "bin/domain/enumall.py"), domain
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(enumallCMD))
