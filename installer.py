@@ -86,11 +86,6 @@ danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierc
     os.system("cp ./bin/subbrute/resolvers.txt ./")
     print("\nInstall altdns")
     os.system("pip install py-altdns")
-    print("\nInstall recon-ng")
-    reconngUpgrade = "git clone https://LaNMaSteR53@bitbucket.org/LaNMaSteR53/recon-ng.git ./bin/recon-ng"
-    os.system(reconngUpgrade)
-    os.system("pip install -r bin/recon-ng/REQUIREMENTS")
-    os.system("ln -s ~/domained/bin/recon-ng /usr/share/recon-ng")
 
     if "kali" in unameChk:
         reconNGInstall = "apt-get install recon-ng"
@@ -99,6 +94,11 @@ danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierc
         print("\nRecon-ng Installed\n")
     else:
         print("Please install Recon-ng - https://bitbucket.org/LaNMaSteR53/")
+        print("\nInstall recon-ng")
+        reconngUpgrade = "git clone https://LaNMaSteR53@bitbucket.org/LaNMaSteR53/recon-ng.git ./bin/recon-ng"
+        os.system(reconngUpgrade)
+        os.system("pip install -r bin/recon-ng/REQUIREMENTS")
+        os.system("ln -s ~/domained/bin/recon-ng /usr/share/recon-ng")
 
     print("\n\033[1;31mAll tools installed \033[1;37m")
     print("Changing back to old working directory: {}".format(old_wd))
