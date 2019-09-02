@@ -228,7 +228,7 @@ def amass(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
         amassFileName = "{}_amass.txt".format(output_base)
-        amassCmd = "amass enum -d {} -o {}".format(domain, amassFileName)
+        amassCmd = "amass enum --passive -d {} -o {}".format(domain, amassFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(amassCmd))
         os.system(amassCmd)
         print("\n\033[1;31mAmass Complete\033[1;37m")
