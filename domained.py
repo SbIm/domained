@@ -132,7 +132,7 @@ def sublist3r(brute=False):
 
 def enumall():
     print("\n\n\033[1;31mRunning Enumall \n\033[1;37m")
-    enumallCMD = "python {} {} -a".format(
+    enumallCMD = "python {} {}".format(
         os.path.join(script_path, "bin/domain/enumall.py"), domain
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(enumallCMD))

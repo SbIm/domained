@@ -86,6 +86,7 @@ danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierc
     os.system("cp ./bin/subbrute/resolvers.txt ./")
     print("\nInstall altdns")
     os.system("pip install py-altdns")
+    os.system("go get github.com/jakejarvis/subtake")
 
     if "kali" in unameChk:
         #reconNGInstall = "apt-get install recon-ng"
