@@ -24,13 +24,15 @@ import os
 import requests
 import smtplib
 import time
+import subprocess
 from signal import signal, alarm, SIGALRM
 from installer import upgradeFiles
 from shutil import which
 
 
 today = datetime.date.today()
-
+wildList = []
+altdnsWildList = []
 
 def get_args():
     parser = argparse.ArgumentParser(description="domained")
@@ -70,7 +72,7 @@ def get_args():
         "--active", help="EyeWitness Active Scan", action="store_true", default=False
     )
     parser.add_argument(
-        "--noeyewitness", help="No EyeWitness", action="store_true", default=False
+        "--eyewitness", help="Use EyeWitness", action="store_true", default=False
     )
 
     return parser.parse_args()
@@ -89,29 +91,6 @@ def banner():
         \_,_/\___/_/_/_/\_,_/_/_//_/\__/\_,_/
     \033[1;34m\t\t\tgithub.com/cakinney\033[1;m"""
     )
-    globpath = "*.csv"
-    globpath2 = "*.lst"
-    if (next(glob.iglob(globpath), None)) or (next(glob.iglob(globpath2), None)):
-        print("\nThe following files may be left over from failed domained attempts:")
-        for file in glob.glob(globpath):
-            print("  - {}".format(file))
-        for file in glob.glob(globpath2):
-            print("  - {}".format(file))
-        signal(SIGALRM, lambda x: 1 / 0)
-        try:
-            alarm(5)
-            RemoveQ = input("\nWould you like to remove the files? [y/n]: ")
-            if RemoveQ.lower() == "y":
-                os.system("rm *.csv")
-                os.system("rm *.lst")
-                print("\nFiles removed\nStarting domained...")
-                time.sleep(5)
-            else:
-                print("\nThank you.\nPlease wait...")
-                time.sleep(1)
-        except:
-            print("\n\nStarting domained...")
-
 
 def sublist3r(brute=False):
     print("\n\n\033[1;31mRunning Sublist3r \n\033[1;37m")
@@ -124,6 +103,7 @@ def sublist3r(brute=False):
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(Subcmd))
     os.system(Subcmd)
+    writeFiles("sublist3r")
     print("\n\033[1;31mSublist3r Complete\033[1;37m")
     time.sleep(1)
     #if brute:
@@ -138,69 +118,176 @@ def enumall():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(enumallCMD))
     os.system(enumallCMD)
     print("\n\033[1;31menumall Complete\033[1;37m")
-    movcsvCMD = "cp {}/{}.csv {}/output/{}_enumall.csv".format(
-        script_path, domain, script_path, domain
+    rmcsvCMD = "rm {}/{}.csv".format(
+        script_path, domain
     )
-    movlstCMD = "cp {}/{}.lst {}/output/{}_enumall.lst".format(
-        script_path, domain, script_path, domain
+    movlstCMD = "mv {}/{}.lst {}_enumall.lst".format(
+        script_path, domain, output_base
     )
-    os.system(movcsvCMD)
+    os.system(rmcsvCMD)
     os.system(movlstCMD)
+    writeFiles("enumall")    
     time.sleep(1)
 
+def subbrute():
+    print("\n\n\033[1;31mRunning subbrute \n\033[1;37m")
+    word_file = os.path.join(
+        # script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
+        script_path, "bin/sublst/all.txt"
+    )
+    # subbruteCMD = "python bin/subbrute/subbrute.py -s {} -c 15 -o {}_subbrute.txt {}".format(
+    #     word_file, 
+    #     output_base,
+    #     domain,
+    # )
+    subbruteCMD = "python bin/massdns/scripts/subbrute.py {} {} > {}_subbrute.txt".format(
+        word_file, 
+        domain,
+        output_base,
+    )
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(subbruteCMD))
+    os.system(subbruteCMD)
+    writeFiles("subbrute")
+    print("\n\033[1;31mSubbrute Complete\033[1;37m")
+    time.sleep(1)
 
 def massdns():
     print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
-    word_file = os.path.join(
-        script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
-    )
-    massdnsCMD = "python {} {} {} | {} -r {}/resolvers.txt -t A -o S -w {}/{}_massdns.txt".format(
-        os.path.join(script_path, "bin/massdns/scripts/subbrute.py"),
-        word_file,
-        domain,
+    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_noaltdns.txt".format(
+        "{}-domain-unique.txt".format(output_base),
         os.path.join(script_path, "bin/massdns/bin/massdns"),
-        script_path,
         script_path,
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
+    global wildList
+    generateWildList("{}_massdns_noaltdns.txt".format(output_base), 
+        wildList)
+    stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
+        "{}_massdns_noaltdns_strip.txt".format(output_base),
+        "{}_massdns_noaltdns_cname_strip.txt".format(output_base))
+    writeFiles("massdns")    
+    # os.system("rm " + "{}-domain-unique.txt".format(output_base))
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
 
-
-def knockpy():
-    print("\n\n\033[1;31mRunning Knock \n\033[1;37m")
-    knockpyCmd = "python {} -c {}".format(
-        os.path.join(script_path, "bin/knockpy/knockpy/knockpy.py"), domain
+def altdns():
+    print("\n\n\033[1;31mRunning altdns \n\033[1;37m")
+    word_file = os.path.join(
+        # script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
+        script_path, "bin/altdns/words.txt"
     )
-    print("\n\033[1;31mRunning Command: \033[1;37m {}".format(knockpyCmd))
-    os.system(knockpyCmd)
-    rootdomainStrip = domain.replace(".", "_")
-    knockpyFilenameInit = "{}_knock.csv".format(output_base)
-    os.system("mv {}* {}".format(rootdomainStrip, knockpyFilenameInit))
+    altdnsCMD = "altdns -i {} -o {} -w {}".format(
+        "{}_massdns_noaltdns_strip.txt".format(output_base),
+        "{}-altdns-data".format(output_base),
+        word_file,
+    )
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(altdnsCMD))
+    os.system(altdnsCMD)
+    # altdns_path = os.path.join(
+    #     script_path, "bin/altdns/altdns/altdns.py"
+    # )
+    # altdnsCMD = "python {} -i {} -o {} -w {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_altdns.txt".format(
+    #     altdns_path,
+    #     "{}_massdns_noaltdns.txt".format(output_base),
+    #     "{}-altdns-data".format(output_base),
+    #     word_file,
+    #     os.path.join(script_path, "bin/massdns/bin/massdns"),
+    #     script_path,
+    #     output_base,
+    # )
+    # print("\n\033[1;31mRunning Command: \033[1;37m{}".format(altdnsCMD))
+    # os.system(altdnsCMD)
+    print("\n\033[1;31mAltdns Complete\033[1;37m")
     time.sleep(1)
-    knockpySubs = []
-    try:
-        with open(knockpyFilenameInit, "rt") as f:
-            reader = csv.reader(f, delimiter=",")
-            print(reader)
-            print(f)
-            for row in reader:
-                print(row)
-                knockpySubs.append(row[3])
-        filenameKnocktxt = "{}.txt".format(knockpyFilenameInit)
-        print("c")
-        f1 = open(filenameKnocktxt, "w")
-        print("d")
-        for hosts in knockpySubs:
-            hosts = "".join(hosts)
-            f1.writelines("\n" + hosts)
-        f1.close()
-    except:
-        print("\nKnock File Error\n")
+    print("\n\n\033[1;31mRunning massDNS for altdns \n\033[1;37m")
+    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_altdns.txt".format(
+        "{}-altdns-data".format(output_base),
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
+        script_path,
+        output_base,
+    )    
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
+    os.system(massdnsCMD)
+    os.system("rm {}".format("{}-altdns-data".format(output_base)))
+    stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
+        "{}_massdns_altdns_strip.txt".format(output_base),
+        "{}_massdns_altdns_cname_strip.txt".format(output_base))
+    global altdnsWildList
+    generateWildList("{}_massdns_altdns_strip.txt".format(output_base),
+        altdnsWildList)
+    # print(altdnsWildList)
+    # time.sleep(100000000)
+    cleanWild("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
+    cleanWild("{}_massdns_altdns_cname_strip.txt".format(output_base), altdnsWildList)
+    print("\n\033[1;31mMasscan for altdns Complete\033[1;37m")
     time.sleep(1)
 
+def generateWildList(massdnsres, dlist):
+    with open(massdnsres, "r") as f:
+        massdnsResLines = set(f)
+        for line in massdnsResLines:
+            hosts = "".join(line)  
+            hosts = hosts.split()[0]
+            if hosts.endswith("."):
+                hosts = hosts[:-1]
+            if hosts.startswith("*."):
+                dlist.append(hosts)
+    if len(dlist) > 0:
+        dlist.sort(key = lambda i:len(i),reverse=False)
+        index = 0
+        while index < len(dlist):
+            wildTemp = dlist[index]
+            wildTemp = wildTemp[2:]
+            wileListTemp = []
+            for wildCard in dlist:
+                if not wildCard.endswith("." + wildTemp):
+                    wileListTemp.append(wildCard)
+                elif wildCard == "*." + wildTemp:
+                    wileListTemp.append(wildCard)
+            dlist = wileListTemp
+            index = index + 1
+
+def stripMassdnsFile(massdnsres, output, cnameOutput):
+    with open(massdnsres, "r") as f:
+        massdnsResLines = set(f)
+    cnameOut = open(cnameOutput, "a")
+    with open(output, "a") as f:
+        for line in massdnsResLines:
+            hosts = "".join(line)
+            if not hosts.endswith(" A 127.0.0.1"):  
+                hosts = hosts.split()[0]
+                if hosts.endswith("."):
+                    hosts = hosts[:-1]
+                f.writelines(hosts + "\n")
+                line_data = "".join(line)
+                if "CNAME" in line_data:
+                    cnameOut.writelines(hosts + "\n")
+    cnameOut.close()
+    # print(wildList)
+    if len(wildList) > 0:
+        cleanWild(output, wildList)
+        cleanWild(cnameOutput, wildList)
+
+def cleanWild(fname, wildList):
+    f = open(fname, "r")
+    fArr = f.read().splitlines()
+    f.close()
+    index = 0
+    while index < len(wildList):
+        wildTemp = wildList[index]
+        wildTemp = wildTemp[2:]
+        fArrTemp = []
+        for fLine in fArr:
+            if not fLine.endswith("." + wildTemp):
+                fArrTemp.append(fLine)
+        fArr = fArrTemp
+        index = index + 1
+    os.system("rm " + fname)
+    with open(fname, 'w') as f:
+        for fLine in fArr:
+            f.write(fLine + "\n")
 
 def check_gopath(cmd, install_repo):
     if os.environ["GOPATH"]:
@@ -228,16 +315,36 @@ def amass(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
         amassFileName = "{}_amass.txt".format(output_base)
-        amassCmd = "amass enum --passive -d {} -o {}".format(domain, amassFileName)
+        amassCmd = "amass enum -passive -d {} -o {}".format(domain, amassFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(amassCmd))
         os.system(amassCmd)
         print("\n\033[1;31mAmass Complete\033[1;37m")
+        writeFiles("amass")
         time.sleep(1)
     else:
         print("\n\n\033[1;3mAmass is not currently in your $PATH \n\033[1;37m")
         if check_gopath("amass", "github.com/OWASP/Amass/...") and rerun != 1:
             amass(rerun=1)
 
+def extractFDNS():
+    print("\n\n\033[1;31mRunning extractFDNS \n\033[1;37m")
+    fdns_domain_file = "{}/bin/ExtractSubdomainFromFDNS/{}.csv".format(script_path ,domain)
+    if os.path.exists(fdns_domain_file):
+        exFDNSf = open(fdns_domain_file, "r")
+        exFDNSLines = exFDNSf.read().splitlines()
+        exFDNSf.close()
+
+        with open("{}_exfdns.txt".format(output_base), "a") as f:
+            for line in exFDNSLines:
+                line_strs = line.split(',')
+                if len(line_strs) > 2:
+                    if line_strs[2] == '\"a\"' or line_strs[2] == '\"cname\"':
+                        line_subdomain = line_strs[1][1:-1]  
+                        f.writelines(line_subdomain + "\n")
+        writeFiles("exfdns")
+        print("\n\033[1;31mextractFDNS Complete\033[1;37m")
+    else:
+        print("\nNo csv data for {}!\n".format(domain))
 
 def subfinder(rerun=0):
     if which("subfinder"):
@@ -247,6 +354,7 @@ def subfinder(rerun=0):
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(subfinderCmd))
         os.system(subfinderCmd)
         print("\n\033[1;31msubfinder Complete\033[1;37m")
+        writeFiles("subfinder")
         time.sleep(1)
     else:
         print("\n\n\033[1;3mSubfinder is not currently in your $PATH \n\033[1;37m")
@@ -256,20 +364,10 @@ def subfinder(rerun=0):
 
 def eyewitness(filename):
     print("\n\n\033[1;31mRunning EyeWitness  \n\033[1;37m")
-    EWHTTPScriptIPS = "python {} -f {} {} --no-prompt --web  -d {}-{}-EW".format(
-        os.path.join(script_path, "bin/EyeWitness/EyeWitness.py"),
+    EWHTTPScriptIPS = "meg -d 10 -c 200 -s 200 / {} {}_meg".format(
         filename,
-        "--active-scan" if active else "",
         output_base,
-        time.strftime("%m-%d-%y-%H-%M"),
     )
-    if vpn:
-        print(
-            "\n\033[1;31mIf not connected to VPN manually run the following command on reconnect:\n\033[1;37m{}".format(
-                EWHTTPScriptIPS
-            )
-        )
-        vpncheck()
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(EWHTTPScriptIPS))
     os.system(EWHTTPScriptIPS)
     print("\a")
@@ -280,13 +378,17 @@ def writeFiles(name):
     """
     subdomainCounter = 0
     subdomainAllFile = "{}-all.txt".format(output_base)
+    subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
+    uniqueDomainsOut = open(subdomainUniqueFile, "a+")
+    uniqueDomainsList = uniqueDomainsOut.read().splitlines()
     fileExt = {
         "sublist3r": ".txt",
-        "knock": ".csv.txt",
         "enumall": ".lst",
         "massdns": ".txt",
         "amass": ".txt",
+        "subbrute": ".txt",
         "subfinder": ".txt",
+        "exfdns": ".txt",
     }
     fileName = output_base + "_" + name + fileExt[name]
 
@@ -300,43 +402,41 @@ def writeFiles(name):
             f.writelines("\n\n" + name)
             for hosts in SubHosts:
                 hosts = "".join(hosts)
-                if name == "massdns":
-                    print("do sth")
-                    domainIndex = hosts.find(domain)
-                    hosts = hosts[:domainIndex+len(domain)]
-                elif name == "subfinder":
-                    if hosts.startswith('.'):
-                        hosts = hosts[1:]
+                if name == "subfinder" and hosts.startswith('.'):
+                    hosts = hosts[1:]
                 f.writelines("\n" + hosts)
+                if hosts not in uniqueDomainsList:
+                    uniqueDomainsOut.writelines(hosts + "\n")
+                hostsArr = hosts.split(".", 1)
+                wildCardhosts = "*." + hostsArr[1]
+                if wildCardhosts not in uniqueDomainsList:
+                    uniqueDomainsOut.writelines(wildCardhosts + "\n")
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
-        enumall_csv_name = output_base + "_" + name + ".csv"
-        os.remove(enumall_csv_name)
+        uniqueDomainsOut.close()
         print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
     except:
         print("\nError Opening %s File!\n" % name)
     return subdomainCounter
 
-
-def subdomainfile():
-    subdomainAllFile = "{}-all.txt".format(output_base)
-    names = ["sublist3r", "knock", "enumall", "massdns", "amass", "subfinder"]
-
-    for name in names:
-        writeFiles(name)
-
-    print("\nCombining Domains Lists\n")
-    with open(subdomainAllFile, "r") as domainList:
-        uniqueDomains = set(domainList)
-        domainList.close()
-        subdomainUrlUniqueFile = "{}-unique.txt".format(output_base)
-        subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
+def generateUrl():
+    print("\nGenerating Urls Lists\n")
+    altdnsSubdomainFile = "{}_massdns_altdns_strip.txt".format(output_base)
+    noaltdnsSubdomainFile = "{}_massdns_noaltdns_strip.txt".format(output_base)
+    all4oneFile = "{}_massdns_all4one.txt".format(output_base)
+    if not mainWildcard:
+        os.system("cat {} {} > temp.txt".format(altdnsSubdomainFile, noaltdnsSubdomainFile))
+    else:
+        os.system("cat {} > temp.txt".format(noaltdnsSubdomainFile))
+    os.system("sort -u temp.txt -o {}".format(all4oneFile))
+    os.system("rm temp.txt")
+    with open(all4oneFile, "r") as f:
+        uniqueDomains = f.read().splitlines()
+        subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
         uniqueDomainsUrlOut = open(subdomainUrlUniqueFile, "w")
-        uniqueDomainsOut = open(subdomainUniqueFile, "w")
         for domains in uniqueDomains:
             domains = domains.replace("\n", "")
             if domains.endswith(domain):
-                uniqueDomainsOut.writelines("{}\n".format(domains))
                 uniqueDomainsUrlOut.writelines("https://{}\n".format(domains))
                 if ports is not False:
                     uniqueDomainsUrlOut.writelines("https://{}:8443\n".format(domains))
@@ -345,31 +445,15 @@ def subdomainfile():
                     if ports is not False:
                         uniqueDomainsUrlOut.writelines("http://{}:8080\n".format(domains))
         uniqueDomainsUrlOut.close()
-    time.sleep(1)
-    rootdomainStrip = domain.replace(".", "_")
-    print("\nCleaning Up Old Files\n")
-    try:
-        os.system("rm {}*".format(domain))
-        os.system("rm {}*".format(rootdomainStrip))
-    except:
-        print("\nError Removing Files!\n")
-    if not noeyewitness:
-        eyewitness(subdomainUrlUniqueFile)
 
-
-def vpncheck():
-    vpnck = requests.get("https://ifconfig.co/json")
-    # Change "City" to your city")
-    if "City" in vpnck.text:
-        print("\n\033[1;31mNot connected via VPN \033[1;37m")
-        print("\n{}".format(vpnck.content))
-        print("\n\033[1;31mQuitting domained... \033[1;37m")
-        quit()
+def checkMainDomainWildCard():
+    print("\nChecking wildcard\n")
+    rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(domain)
+    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(rand_domain))
+    if len(dig_output) != 0:
+        return True
     else:
-        print("\n\033[1;31mConnected via VPN \033[1;37m")
-        print("\n{}".format(vpnck.content))
-        time.sleep(5)
-
+        return False
 
 def notified(sub, msg):
     notifySub = sub
@@ -431,8 +515,6 @@ def notified(sub, msg):
 
 
 def options():
-    if vpn:
-        vpncheck()
     if fresh:
         os.system("rm -r output")
         newpath = r"output"
@@ -442,26 +524,24 @@ def options():
     else:
         if domain:
             # clean old results
-            os.system("rm -dfr {}*".format(output_base))
+            os.system("rm -dfr output/{}".format(domain))
+            os.system("mkdir output/{}".format(domain))
             # notify domained begins
             if notify:
                 notified("domained Script Started", "domained Script Started for {}".format(domain))
-            if quick:
-                amass()
-                subfinder()
-            elif bruteforce:
-                massdns()
-                sublist3r()
-                enumall()
-                amass()
-                subfinder()
-            else:
-                sublist3r(True)
-                enumall()
-                knockpy()
-                amass()
-                subfinder()
-            subdomainfile()
+            enumall()
+            subfinder()
+            amass()
+            extractFDNS()
+            if not mainWildcard:
+                subbrute()
+            massdns()
+            if not mainWildcard:
+                altdns()
+            generateUrl()
+            if useEyewitness:
+                subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
+                eyewitness(subdomainUrlUniqueFile)
             if notify:
                 notified("domained Script Finished", "domained Script Finished for {}".format(domain))
         else:
@@ -473,8 +553,8 @@ if __name__ == "__main__":
     banner()
     args = get_args()
     domain = args.domain
-    output_base = "output/{}".format(domain)
     script_path = os.path.dirname(os.path.realpath(__file__))
+    output_base = "{}/output/{}/{}".format(script_path, domain, domain)
     secure = args.secure
     bruteforce = args.bruteforce
     upgrade = args.upgrade
@@ -486,5 +566,6 @@ if __name__ == "__main__":
     fresh = args.fresh
     notify = args.notify
     active = args.active
-    noeyewitness = args.noeyewitness
+    useEyewitness = args.eyewitness
+    mainWildcard = checkMainDomainWildCard()
     options()

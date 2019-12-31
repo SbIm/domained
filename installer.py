@@ -83,10 +83,13 @@ danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierc
     massdnsMake = "make -C ./bin/massdns"
     os.system(massdnsMake)
     print("\nMassdns Installed\n")
-    os.system("cp ./bin/subbrute/resolvers.txt ./")
+    os.system("cp ./bin/massdns/lists/resolvers.txt ./")
     print("\nInstall altdns")
     os.system("pip install py-altdns")
     os.system("go get github.com/jakejarvis/subtake")
+    os.system("git clone https://github.com/SbIm/altdns.git ./bin/altdns")
+    os.system("git clone https://github.com/assetnote/commonspeak2-wordlists.git ./bin/commonspeak2-wordlists")
+    os.system("git clone https://github.com/SbIm/ExtractSubdomainFromFDNS.git ./bin/ExtractSubdomainFromFDNS")
 
     if "kali" in unameChk:
         #reconNGInstall = "apt-get install recon-ng"

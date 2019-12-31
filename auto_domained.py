@@ -34,14 +34,15 @@ while 1:
     os.system("wget -O {} {}".format(pastebin_log_file, pastebin_url))
     with open(pastebin_log_file, "r") as f1:
         pastebin_domains = f1.read().splitlines()
-    with open(local_log_file, "w+") as f2:
+    with open(local_log_file, "a+") as f2:
         locallog_domains = f2.read().splitlines()
     for pastebin_domain in pastebin_domains:
         if pastebin_domain not in locallog_domains:
-            os.system("python3 domained.py -d {} -p -b --bruteall --notify".format(pastebin_domain.split(',')[0]))
+            os.system("python3 domained.py -d {} -p --notify --eyewitness".format(pastebin_domain.split(',')[0]))
             locallog_domains.append(pastebin_domain)
             File_llf = open(local_log_file, "a")
-            File_llf.writelines(pastebin_domain)
+            File_llf.writelines(pastebin_domain+'\n')
             File_llf.close()
-    sleep(300)
+            break
+    time.sleep(300)
 
