@@ -477,7 +477,7 @@ def generateUrl():
 def checkMainDomainWildCard(checkdomain):
     print("\nChecking wildcard\n")
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(checkdomain))
+    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(rand_domain))
     if len(dig_output) != 0:
         return True
     else:
