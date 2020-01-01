@@ -277,9 +277,6 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
             if not fixhosts == hosts:
                 hosts = fixhosts
                 wildList.append(hosts)
-            elif checkMainDomainWildCard("jsdfeedcafesbgjxndcjmb" + hosts):
-                hosts = hosts.split(".", 1)[1]
-                wildList.append(hosts)
             if hosts.endswith(domain):
                 f.writelines(hosts + "\n")
                 line_data = "".join(line)
