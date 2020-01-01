@@ -288,12 +288,9 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
     #     cleanWild(cnameOutput, wildList)
 
 def fixSubDomainWildCard(hosts):
-    if hosts.endswith("." + domain):
-        if checkMainDomainWildCard(hosts):
-            hosts = hosts.split(".", 1)[1]
-            return fixSubDomainWildCard(hosts)
-        else:
-            return hosts
+    subhosts = hosts.split(".", 1)[1]
+    if checkMainDomainWildCard(subhosts):
+        return fixSubDomainWildCard(subhosts)
     else:
         return hosts
 
