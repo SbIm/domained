@@ -289,8 +289,11 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
 
 def fixSubDomainWildCard(hosts):
     subhosts = hosts.split(".", 1)[1]
-    if checkMainDomainWildCard(subhosts):
-        return fixSubDomainWildCard(subhosts)
+    if subhosts.endswith(domain):
+        if checkMainDomainWildCard(subhosts):
+            return fixSubDomainWildCard(subhosts)
+        else:
+            return hosts
     else:
         return hosts
 
