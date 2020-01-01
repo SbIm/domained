@@ -570,7 +570,7 @@ def options():
 
 
 if __name__ == "__main__":
-    global wildList
+    # global wildList
     banner()
     args = get_args()
     domain = args.domain
