@@ -162,7 +162,7 @@ def massdns():
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    os.system(massdnsCMD)
+    # os.system(massdnsCMD)
     # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
@@ -256,7 +256,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
     with open(output, "a") as f:
         for line in massdnsResLines:
             hosts = "".join(line)
-            if not hosts.endswith(" A 127.0.0.1"):
+            if hosts.endswith(" A 127.0.0.1"):
                 continue
             hosts = hosts.split()[0]
             if hosts.endswith("."):
