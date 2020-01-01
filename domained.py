@@ -210,7 +210,7 @@ def altdns():
         output_base,
     )    
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    os.system(massdnsCMD)
+    # os.system(massdnsCMD)
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
@@ -277,13 +277,12 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
             if not fixhosts == hosts:
                 hosts = fixhosts
                 wildList.append(hosts)
-            if hosts.endswith(domain):
-                f.writelines(hosts + "\n")
-                line_data = "".join(line)
-                if "CNAME" in line_data:
-                    cnameOut.writelines(hosts + "\n")
+            f.writelines(hosts + "\n")
+            line_data = "".join(line)
+            if "CNAME" in line_data:
+                cnameOut.writelines(hosts + "\n")
     cnameOut.close()
-    # print(wildList)
+    print(wildList)
     # if len(wildList) > 0:
     #     cleanWild(output, wildList)
     #     cleanWild(cnameOutput, wildList)
