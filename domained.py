@@ -551,7 +551,7 @@ def options():
         upgradeFiles()
     else:
         if domain:
-            clean old results
+            # clean old results
             os.system("rm -dfr output/{}".format(domain))
             os.system("mkdir output/{}".format(domain))
             # notify domained begins
