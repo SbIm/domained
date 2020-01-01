@@ -152,7 +152,9 @@ def subbrute():
     time.sleep(1)
 
 def massdns():
+    # global wildList
     print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
+    # 似乎结果也包含了NXDOMAIN且有CNAME的类型
     massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_noaltdns.txt".format(
         "{}-domain-unique.txt".format(output_base),
         os.path.join(script_path, "bin/massdns/bin/massdns"),
@@ -161,9 +163,7 @@ def massdns():
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
-    global wildList
-    generateWildList("{}_massdns_noaltdns.txt".format(output_base), 
-        wildList)
+    # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
         "{}_massdns_noaltdns_cname_strip.txt".format(output_base))
@@ -173,6 +173,7 @@ def massdns():
     time.sleep(1)
 
 def altdns():
+    # global altdnsWildList
     print("\n\n\033[1;31mRunning altdns \n\033[1;37m")
     word_file = os.path.join(
         # script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
@@ -214,13 +215,11 @@ def altdns():
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
         "{}_massdns_altdns_cname_strip.txt".format(output_base))
-    global altdnsWildList
-    generateWildList("{}_massdns_altdns_strip.txt".format(output_base),
-        altdnsWildList)
+    # generateWildList("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
     # print(altdnsWildList)
     # time.sleep(100000000)
-    cleanWild("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
-    cleanWild("{}_massdns_altdns_cname_strip.txt".format(output_base), altdnsWildList)
+    # cleanWild("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
+    # cleanWild("{}_massdns_altdns_cname_strip.txt".format(output_base), altdnsWildList)
     print("\n\033[1;31mMasscan for altdns Complete\033[1;37m")
     time.sleep(1)
 
@@ -250,44 +249,65 @@ def generateWildList(massdnsres, dlist):
             index = index + 1
 
 def stripMassdnsFile(massdnsres, output, cnameOutput):
+    global wildList
     with open(massdnsres, "r") as f:
         massdnsResLines = set(f)
     cnameOut = open(cnameOutput, "a")
     with open(output, "a") as f:
         for line in massdnsResLines:
             hosts = "".join(line)
-            if not hosts.endswith(" A 127.0.0.1"):  
-                hosts = hosts.split()[0]
-                if hosts.endswith("."):
-                    hosts = hosts[:-1]
+            if not hosts.endswith(" A 127.0.0.1"):
+                continue
+            hosts = hosts.split()[0]
+            if hosts.endswith("."):
+                hosts = hosts[:-1]
+            if hosts.startswith("*."):
+                hosts = hosts[2:]
+                wildList.append(hosts)
+
+            fixhosts = fixSubDomainWildCard(hosts)
+            if not fixhosts == hosts:
+                hosts = fixhosts
+                wildList.append(hosts)
+            elif checkMainDomainWildCard("jsdfeedcafesbgjxndcjmb" + hosts):
+                hosts = hosts.split(".", 1)[1]
+                wildList.append(hosts)
+            if hosts.endswith(domain):
                 f.writelines(hosts + "\n")
                 line_data = "".join(line)
                 if "CNAME" in line_data:
                     cnameOut.writelines(hosts + "\n")
     cnameOut.close()
     # print(wildList)
-    if len(wildList) > 0:
-        cleanWild(output, wildList)
-        cleanWild(cnameOutput, wildList)
+    # if len(wildList) > 0:
+    #     cleanWild(output, wildList)
+    #     cleanWild(cnameOutput, wildList)
 
-def cleanWild(fname, wildList):
-    f = open(fname, "r")
-    fArr = f.read().splitlines()
-    f.close()
-    index = 0
-    while index < len(wildList):
-        wildTemp = wildList[index]
-        wildTemp = wildTemp[2:]
-        fArrTemp = []
-        for fLine in fArr:
-            if not fLine.endswith("." + wildTemp):
-                fArrTemp.append(fLine)
-        fArr = fArrTemp
-        index = index + 1
-    os.system("rm " + fname)
-    with open(fname, 'w') as f:
-        for fLine in fArr:
-            f.write(fLine + "\n")
+def fixSubDomainWildCard(hosts):
+    if checkMainDomainWildCard(hosts):
+        hosts = hosts.split(".", 1)[1]
+        return fixSubDomainWildCard(hosts)
+    else:
+        return hosts
+
+# def cleanWild(fname, wildList):
+#     f = open(fname, "r")
+#     fArr = f.read().splitlines()
+#     f.close()
+#     index = 0
+#     while index < len(wildList):
+#         wildTemp = wildList[index]
+#         wildTemp = wildTemp[2:]
+#         fArrTemp = []
+#         for fLine in fArr:
+#             if not fLine.endswith("." + wildTemp):
+#                 fArrTemp.append(fLine)
+#         fArr = fArrTemp
+#         index = index + 1
+#     os.system("rm " + fname)
+#     with open(fname, 'w') as f:
+#         for fLine in fArr:
+#             f.write(fLine + "\n")
 
 def check_gopath(cmd, install_repo):
     if os.environ["GOPATH"]:
@@ -446,10 +466,10 @@ def generateUrl():
                         uniqueDomainsUrlOut.writelines("http://{}:8080\n".format(domains))
         uniqueDomainsUrlOut.close()
 
-def checkMainDomainWildCard():
+def checkMainDomainWildCard(checkdomain):
     print("\nChecking wildcard\n")
-    rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(domain)
-    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(rand_domain))
+    rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
+    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(checkdomain))
     if len(dig_output) != 0:
         return True
     else:
@@ -550,6 +570,7 @@ def options():
 
 
 if __name__ == "__main__":
+    global wildList
     banner()
     args = get_args()
     domain = args.domain
@@ -567,5 +588,7 @@ if __name__ == "__main__":
     notify = args.notify
     active = args.active
     useEyewitness = args.eyewitness
-    mainWildcard = checkMainDomainWildCard()
+    mainWildcard = checkMainDomainWildCard(domain)
+    if mainWildcard:
+        wildList.append(domain)
     options()

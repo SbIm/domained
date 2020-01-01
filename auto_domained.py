@@ -44,5 +44,5 @@ while 1:
             File_llf.writelines(pastebin_domain+'\n')
             File_llf.close()
             break
-    time.sleep(300)
+    time.sleep(3600)
 
