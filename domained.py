@@ -162,12 +162,12 @@ def massdns():
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    # os.system(massdnsCMD)
+    os.system(massdnsCMD)
     # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
         "{}_massdns_noaltdns_cname_strip.txt".format(output_base))
-    writeFiles("massdns")    
+    # writeFiles("massdns")    
     # os.system("rm " + "{}-domain-unique.txt".format(output_base))
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
