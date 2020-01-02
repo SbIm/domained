@@ -176,6 +176,7 @@ def massdns():
         True)
     # writeFiles("massdns")    
     os.system("rm " + "{}-domain-unique.txt".format(output_base))
+    os.system("rm " + "{}-all.txt".format(output_base))
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
 
@@ -425,7 +426,11 @@ def subfinder(rerun=0):
 
 def eyewitness(filename):
     print("\n\n\033[1;31mRunning EyeWitness  \n\033[1;37m")
-    EWHTTPScriptIPS = "meg -d 10 -c 200 -s 200 / {} {}_meg".format(
+    # EWHTTPScriptIPS = "meg -d 10 -c 200 -s 200 / {} {}_meg".format(
+    #     filename,
+    #     output_base,
+    # )
+    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
         filename,
         output_base,
     )
