@@ -273,14 +273,6 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                 hosts = hosts[:-1]
             if not hosts.endswith(domain):
                 continue
-            if hosts.startswith("*."):
-                hosts = hosts[2:]
-                if not hosts in wildList:
-                    if "CNAME" in line_data:
-                        cnameWildList.append(hosts)
-                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
-                    else:
-                        wildList.append(hosts)
             triggerWild = False
             checkList = []
             if "CNAME" in line_data:
@@ -293,6 +285,14 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                     break
             if triggerWild:
                 continue
+            if hosts.startswith("*."):
+                hosts = hosts[2:]
+                if not hosts in wildList:
+                    if "CNAME" in line_data:
+                        cnameWildList.append(hosts)
+                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
+                    else:
+                        wildList.append(hosts)
             if fixwildCard:
                 fixhosts = fixSubDomainWildCard(hosts)
                 if not fixhosts == hosts:
@@ -430,7 +430,7 @@ def eyewitness(filename):
     #     filename,
     #     output_base,
     # )
-    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web --threads 15 --timeout 5 -d {}_Eyewitness".format(script_path, 
+    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
         filename,
         output_base,
     )
@@ -478,7 +478,7 @@ def writeFiles(name):
                 if wildCardhosts not in uniqueDomainsList:
                     uniqueDomainsOut.writelines(wildCardhosts + "\n")
                 subdomainCounter = subdomainCounter + 1
-        # os.remove(fileName)
+        os.remove(fileName)
         uniqueDomainsOut.close()
         print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
     except:
