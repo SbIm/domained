@@ -32,6 +32,12 @@ from shutil import which
 
 today = datetime.date.today()
 wildList = []
+cnameWildList = []
+NOWILD = 0
+AWILD = 1
+CNAMEWILD = 2
+
+
 altdnsWildList = []
 
 def get_args():
@@ -258,6 +264,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
     with open(output, "a") as f:
         for line in massdnsResLines:
             hosts = "".join(line)
+            line_data = "".join(line)
             if hosts.endswith(" A 127.0.0.1"):
                 continue
             hosts = hosts.split()[0]
@@ -268,9 +275,17 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
             if hosts.startswith("*."):
                 hosts = hosts[2:]
                 if not hosts in wildList:
-                    wildList.append(hosts)
+                    if "CNAME" in line_data:
+                        cnameWildList.append(hosts)
+                    else:
+                        wildList.append(hosts)
             triggerWild = False
-            for wild in wildList:
+            checkList = []
+            if "CNAME" in line_data:
+                checkList = cnameWildList
+            else:
+                checkList = wildList
+            for wild in checkList:
                 if hosts.endswith("." + wild):
                     triggerWild = True
                     break
@@ -280,9 +295,11 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                 fixhosts = fixSubDomainWildCard(hosts)
                 if not fixhosts == hosts:
                     hosts = fixhosts
-                    wildList.append(hosts)
+                    if "CNAME" in line_data:
+                        cnameWildList.append(hosts)
+                    else:
+                        wildList.append(hosts)
             f.writelines(hosts + "\n")
-            line_data = "".join(line)
             if "CNAME" in line_data:
                 cnameOut.writelines(hosts + "\n")
     cnameOut.close()
@@ -294,7 +311,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
 def fixSubDomainWildCard(hosts):
     subhosts = hosts.split(".", 1)[1]
     if subhosts.endswith(domain):
-        if checkMainDomainWildCard(subhosts):
+        if checkMainDomainWildCard(subhosts) > 0:
             return fixSubDomainWildCard(subhosts)
         else:
             return hosts
@@ -481,10 +498,14 @@ def checkMainDomainWildCard(checkdomain):
     print("\nChecking wildcard\n")
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
     dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(rand_domain))
+    dig_cname = subprocess.getoutput("dig {} @8.8.8.8 | grep CNAME".format(rand_domain))
     if len(dig_output) != 0:
-        return True
+        if len(dig_cname) != 0:
+            return CNAMEWILD
+        else:
+            return AWILD
     else:
-        return False
+        return NOWILD
 
 def notified(sub, msg):
     notifySub = sub
@@ -600,6 +621,8 @@ if __name__ == "__main__":
     active = args.active
     useEyewitness = args.eyewitness
     mainWildcard = checkMainDomainWildCard(domain)
-    if mainWildcard:
+    if mainWildcard == AWILD:
         wildList.append(domain)
+    elif mainWildcard == CNAMEWILD:
+        cnameWildList.append(domain)
     options()
