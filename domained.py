@@ -162,11 +162,12 @@ def massdns():
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    # os.system(massdnsCMD)
+    os.system(massdnsCMD)
     # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
-        "{}_massdns_noaltdns_cname_strip.txt".format(output_base))
+        "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
+        True)
     # writeFiles("massdns")    
     # os.system("rm " + "{}-domain-unique.txt".format(output_base))
     print("\n\033[1;31mMasscan Complete\033[1;37m")
@@ -214,7 +215,8 @@ def altdns():
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
-        "{}_massdns_altdns_cname_strip.txt".format(output_base))
+        "{}_massdns_altdns_cname_strip.txt".format(output_base)
+        False)
     # generateWildList("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
     # print(altdnsWildList)
     # time.sleep(100000000)
@@ -248,7 +250,7 @@ def generateWildList(massdnsres, dlist):
             dlist = wileListTemp
             index = index + 1
 
-def stripMassdnsFile(massdnsres, output, cnameOutput):
+def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
     global wildList
     with open(massdnsres, "r") as f:
         massdnsResLines = set(f)
@@ -265,7 +267,8 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
                 continue
             if hosts.startswith("*."):
                 hosts = hosts[2:]
-                wildList.append(hosts)
+                if not hosts in wildList:
+                    wildList.append(hosts)
             triggerWild = False
             for wild in wildList:
                 if hosts.endswith("." + wild):
@@ -273,10 +276,11 @@ def stripMassdnsFile(massdnsres, output, cnameOutput):
                     break
             if triggerWild:
                 continue
-            fixhosts = fixSubDomainWildCard(hosts)
-            if not fixhosts == hosts:
-                hosts = fixhosts
-                wildList.append(hosts)
+            if fixwildCard:
+                fixhosts = fixSubDomainWildCard(hosts)
+                if not fixhosts == hosts:
+                    hosts = fixhosts
+                    wildList.append(hosts)
             f.writelines(hosts + "\n")
             line_data = "".join(line)
             if "CNAME" in line_data:
@@ -551,26 +555,26 @@ def options():
     else:
         if domain:
             # clean old results
-            # os.system("rm -dfr output/{}".format(domain))
-            # os.system("mkdir output/{}".format(domain))
-            # # notify domained begins
-            # if notify:
-            #     notified("domained Script Started", "domained Script Started for {}".format(domain))
-            # enumall()
-            # subfinder()
-            # amass()
-            # extractFDNS()
-            # if not mainWildcard:
-            #     subbrute()
+            os.system("rm -dfr output/{}".format(domain))
+            os.system("mkdir output/{}".format(domain))
+            # notify domained begins
+            if notify:
+                notified("domained Script Started", "domained Script Started for {}".format(domain))
+            enumall()
+            subfinder()
+            amass()
+            extractFDNS()
+            if not mainWildcard:
+                subbrute()
             massdns()
-            # if not mainWildcard:
-            #     altdns()
-            # generateUrl()
-            # if useEyewitness:
-            #     subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-            #     eyewitness(subdomainUrlUniqueFile)
-            # if notify:
-            #     notified("domained Script Finished", "domained Script Finished for {}".format(domain))
+            if not mainWildcard:
+                altdns()
+            generateUrl()
+            if useEyewitness:
+                subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
+                eyewitness(subdomainUrlUniqueFile)
+            if notify:
+                notified("domained Script Finished", "domained Script Finished for {}".format(domain))
         else:
             print("\nPlease provide a domain. Ex. -d example.com")
     print("\n\033[1;34mAll your subdomain are belong to us\033[1;37m")
