@@ -483,14 +483,21 @@ def writeFiles(name):
 def generateUrl():
     print("\nGenerating Urls Lists\n")
     altdnsSubdomainFile = "{}_massdns_altdns_strip.txt".format(output_base)
+    altdnsCnameSubdomainFile = "{}_massdns_altdns_cname_strip.txt".format(output_base)
     noaltdnsSubdomainFile = "{}_massdns_noaltdns_strip.txt".format(output_base)
+    noaltdnsCnameSubdomainFile = "{}_massdns_noaltdns_cname_strip.txt".format(output_base)
     all4oneFile = "{}_massdns_all4one.txt".format(output_base)
-    if not mainWildcard:
+    all4oneCnameFile = "{}_massdns_cname_all4one.txt".format(output_base)
+    if mainWildcard == NOWILD:
         os.system("cat {} {} > temp.txt".format(altdnsSubdomainFile, noaltdnsSubdomainFile))
+        os.system("cat {} {} > cnametemp.txt".format(altdnsCnameSubdomainFile, noaltdnsCnameSubdomainFile))
     else:
         os.system("cat {} > temp.txt".format(noaltdnsSubdomainFile))
+        os.system("cat {} > cnametemp.txt".format(noaltdnsCnameSubdomainFile))
     os.system("sort -u temp.txt -o {}".format(all4oneFile))
+    os.system("sort -u cnametemp.txt -o {}".format(all4oneCnameFile))
     os.system("rm temp.txt")
+    os.system("rm cnametemp.txt")
     with open(all4oneFile, "r") as f:
         uniqueDomains = f.read().splitlines()
         subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
@@ -605,10 +612,10 @@ def options():
             subfinder()
             amass()
             extractFDNS()
-            if not mainWildcard:
+            if mainWildcard == NOWILD:
                 subbrute()
             massdns()
-            if not mainWildcard:
+            if mainWildcard == NOWILD:
                 altdns()
             generateUrl()
             if useEyewitness:
