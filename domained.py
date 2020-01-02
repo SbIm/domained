@@ -175,7 +175,7 @@ def massdns():
         "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
         True)
     # writeFiles("massdns")    
-    # os.system("rm " + "{}-domain-unique.txt".format(output_base))
+    os.system("rm " + "{}-domain-unique.txt".format(output_base))
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
 
@@ -277,7 +277,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                 if not hosts in wildList:
                     if "CNAME" in line_data:
                         cnameWildList.append(hosts)
-                        cnameOut.writelines("c_wild_list" + line_data + "\n")
+                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
                     else:
                         wildList.append(hosts)
             triggerWild = False
@@ -298,7 +298,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                     hosts = fixhosts
                     if "CNAME" in line_data:
                         cnameWildList.append(hosts)
-                        cnameOut.writelines("c_wild_list" + line_data + "\n")
+                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
                     else:
                         wildList.append(hosts)
             f.writelines(hosts + "\n")
