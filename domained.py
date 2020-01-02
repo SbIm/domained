@@ -506,15 +506,21 @@ def generateUrl():
         uniqueDomainsUrlOut.close()
 
 def checkMainDomainWildCard(checkdomain):
-    print("\nChecking wildcard\n")
+    # print("\nChecking wildcard\n")
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    dig_output = subprocess.getoutput("dig {} @8.8.8.8 | grep NOERROR".format(rand_domain))
-    dig_cname = subprocess.getoutput("dig {} @8.8.8.8 | grep CNAME".format(rand_domain))
-    if len(dig_output) != 0:
-        if len(dig_cname) != 0:
-            return CNAMEWILD
+    os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
+    os.system("dig {} @8.8.8.8 > tempCheck".format(checkdomain))
+    dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
+    dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
+    dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
+    dig_cname = ken(subprocess.getoutput("cat tempCheck | grep CNAME"))
+    if dig_c_noerror > 0:
+        if dig_c_cname > 0:
+            return CNAMEWILD    # sub CNAME
+        elif dig_cname > 0:    
+            return NOWILD       # sub A, domain CNAME
         else:
-            return AWILD
+            return AWILD        # sub A, domain A
     else:
         return NOWILD
 
