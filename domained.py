@@ -277,6 +277,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                 if not hosts in wildList:
                     if "CNAME" in line_data:
                         cnameWildList.append(hosts)
+                        cnameOut.writelines("c_wild_list" + line_data + "\n")
                     else:
                         wildList.append(hosts)
             triggerWild = False
@@ -297,6 +298,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                     hosts = fixhosts
                     if "CNAME" in line_data:
                         cnameWildList.append(hosts)
+                        cnameOut.writelines("c_wild_list" + line_data + "\n")
                     else:
                         wildList.append(hosts)
             f.writelines(hosts + "\n")
@@ -516,11 +518,11 @@ def checkMainDomainWildCard(checkdomain):
     dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
     if dig_c_noerror > 0:
         if dig_c_cname > 0:
-            return CNAMEWILD    # sub CNAME
+            return CNAMEWILD    # sib CNAME
         elif dig_cname > 0:    
-            return NOWILD       # sub A, domain CNAME
+            return NOWILD       # sib A, domain CNAME
         else:
-            return AWILD        # sub A, domain A
+            return AWILD        # sib A, domain A
     else:
         return NOWILD
 
