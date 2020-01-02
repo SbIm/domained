@@ -215,7 +215,7 @@ def altdns():
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
-        "{}_massdns_altdns_cname_strip.txt".format(output_base)
+        "{}_massdns_altdns_cname_strip.txt".format(output_base),
         False)
     # generateWildList("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
     # print(altdnsWildList)
