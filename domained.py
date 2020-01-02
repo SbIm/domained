@@ -430,7 +430,7 @@ def eyewitness(filename):
     #     filename,
     #     output_base,
     # )
-    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
+    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web --threads 15 --timeout 5 -d {}_Eyewitness".format(script_path, 
         filename,
         output_base,
     )
