@@ -473,7 +473,7 @@ def writeFiles(name):
                 if wildCardhosts not in uniqueDomainsList:
                     uniqueDomainsOut.writelines(wildCardhosts + "\n")
                 subdomainCounter = subdomainCounter + 1
-        os.remove(fileName)
+        # os.remove(fileName)
         uniqueDomainsOut.close()
         print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
     except:
@@ -487,13 +487,16 @@ def generateUrl():
     noaltdnsSubdomainFile = "{}_massdns_noaltdns_strip.txt".format(output_base)
     noaltdnsCnameSubdomainFile = "{}_massdns_noaltdns_cname_strip.txt".format(output_base)
     all4oneFile = "{}_massdns_all4one.txt".format(output_base)
-    all4oneCnameFile = "{}_massdns_cname_all4one.txt".format(output_base)
+    all4oneCnameFile = "{}_massdns_all4one_cname.txt".format(output_base)
     if mainWildcard == NOWILD:
         os.system("cat {} {} > temp.txt".format(altdnsSubdomainFile, noaltdnsSubdomainFile))
         os.system("cat {} {} > cnametemp.txt".format(altdnsCnameSubdomainFile, noaltdnsCnameSubdomainFile))
+        os.system("rm {} {} {} {}".format(altdnsSubdomainFile, noaltdnsSubdomainFile, 
+                                        altdnsCnameSubdomainFile, noaltdnsCnameSubdomainFile))
     else:
         os.system("cat {} > temp.txt".format(noaltdnsSubdomainFile))
         os.system("cat {} > cnametemp.txt".format(noaltdnsCnameSubdomainFile))
+        os.system("rm {} {}".format(noaltdnsSubdomainFile, noaltdnsCnameSubdomainFile))
     os.system("sort -u temp.txt -o {}".format(all4oneFile))
     os.system("sort -u cnametemp.txt -o {}".format(all4oneCnameFile))
     os.system("rm temp.txt")
