@@ -513,7 +513,7 @@ def checkMainDomainWildCard(checkdomain):
     dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
     dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
     dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
-    dig_cname = ken(subprocess.getoutput("cat tempCheck | grep CNAME"))
+    dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
     if dig_c_noerror > 0:
         if dig_c_cname > 0:
             return CNAMEWILD    # sub CNAME
