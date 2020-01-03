@@ -385,7 +385,6 @@ def writeFiles(name):
     subdomainAllFile = "{}-all.txt".format(output_base)
     subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
     uniqueDomainsOut = open(subdomainUniqueFile, "a+")
-    uniqueDomainsList = uniqueDomainsOut.read().splitlines()
     fileExt = {
         "sublist3r": ".txt",
         "enumall": ".lst",
@@ -410,17 +409,15 @@ def writeFiles(name):
                 if name == "subfinder" and hosts.startswith('.'):
                     hosts = hosts[1:]
                 f.writelines("\n" + hosts)
-                if hosts not in uniqueDomainsList:
-                    uniqueDomainsOut.writelines(hosts + "\n")
-                    uniqueDomainsList.append(hosts)
+                uniqueDomainsOut.writelines(hosts + "\n")
                 hostsArr = hosts.split(".", 1)
                 wildCardhosts = "*." + hostsArr[1]
-                if wildCardhosts not in uniqueDomainsList:
-                    uniqueDomainsOut.writelines(wildCardhosts + "\n")
-                    uniqueDomainsList.append(wildCardhosts)
+                uniqueDomainsOut.writelines(wildCardhosts + "\n")
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
         uniqueDomainsOut.close()
+        os.system("sort -u {} -o sorted_temp.txt".format(subdomainUniqueFile))
+        os.system("mv sorted_temp.txt {}".format(subdomainUniqueFile))
         print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
     except:
         print("\nError Opening %s File!\n" % name)
