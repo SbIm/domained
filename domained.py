@@ -256,12 +256,20 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
     with open(massdnsres, "r") as f:
         massdnsResLines = set(f)
     with open(wilds, "r") as f:
-        wildLines = set(f)
+        wildLines = f.readlines()
+        wildLines.sort(key=lambda x: len(x))
+        cleanWildLines = [wildLines[0]]
+        for wileLine in wildLines:
+            for cleanWild in cleanWildLines:
+                if cleanWild in wileLine:
+                    break
+            cleanWildLines.append(wileLine)
+
     cnameOut = open(cnameOutput, "a")
     with open(output, "a") as f:
         for line in massdnsResLines:
-            hosts = "".join(line)
-            line_data = "".join(line)
+            hosts = line
+            line_data = line
             if hosts.endswith(" A 127.0.0.1"):
                 continue
             hosts = hosts.split()[0]
@@ -269,11 +277,12 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
                 hosts = hosts[:-1]
             if not hosts.endswith(domain):
                 continue
-            if hosts.startswith("*."):
+            if hosts.startswith("*.") and line_data in cleanWildLines:
                 hosts = hosts[2:]
                 if "CNAME" in line_data:
                     cnameOut.writelines(hosts + "\n")
                 f.writelines(hosts + "\n")
+                continue
             wild_line_data = "*." + line_data.split(".", 1)[1]
             if wild_line_data in wildLines:
                 continue
