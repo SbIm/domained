@@ -413,7 +413,7 @@ def writeFiles(name):
                 f.writelines("\n" + hosts)
                 uniqueDomainsOut.writelines(hosts + "\n")
                 hostsArr = hosts.split(".", 1)
-                wildCardhosts = "*." + hostsArr[1]
+                wildCardhosts = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + hostsArr[1]
                 uniqueDomainsOut.writelines(wildCardhosts + "\n")
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
