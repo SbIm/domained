@@ -261,7 +261,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
         cleanWildLines = [wildLines[0]]
         for wileLine in wildLines:
             for cleanWild in cleanWildLines:
-                if cleanWild in wileLine:
+                if cleanWild[2:] in wileLine[2:]:
                     break
             cleanWildLines.append(wileLine)
 
