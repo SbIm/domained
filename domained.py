@@ -195,22 +195,18 @@ def altdns():
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(altdnsCMD))
     os.system(altdnsCMD)
-    # altdns_path = os.path.join(
-    #     script_path, "bin/altdns/altdns/altdns.py"
-    # )
-    # altdnsCMD = "python {} -i {} -o {} -w {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_altdns.txt".format(
-    #     altdns_path,
-    #     "{}_massdns_noaltdns.txt".format(output_base),
-    #     "{}-altdns-data".format(output_base),
-    #     word_file,
-    #     os.path.join(script_path, "bin/massdns/bin/massdns"),
-    #     script_path,
-    #     output_base,
-    # )
-    # print("\n\033[1;31mRunning Command: \033[1;37m{}".format(altdnsCMD))
-    # os.system(altdnsCMD)
     print("\n\033[1;31mAltdns Complete\033[1;37m")
     time.sleep(1)
+    with open("{}-altdns-data".format(output_base), "r") as f:
+        altdnsData = f.read().splitlines()
+    with open("altdnsTemp", "a") as altf:
+        for altdnsLine in altdnsData:
+            altf.writelines(altdnsLine + "\n")
+            altdnsLine = altdnsLine.split(".", 1)[1]
+            altdnsLine = "*." + altdnsLine
+            altf.writelines(altdnsLine + "\n")
+    os.system("rm {}-altdns-data".format(output_base))
+    os.system("sort -u altdnsTemp -o {}-altdns-data".format(output_base))
     print("\n\n\033[1;31mRunning massDNS for altdns \n\033[1;37m")
     massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_altdns.txt".format(
         "{}-altdns-data".format(output_base),
@@ -221,15 +217,11 @@ def altdns():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
+    os.system("cat {}_massdns_altdns.txt | grep *. > {}_altdns_wilds.txt".format(output_base, output_base))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
         "{}_massdns_altdns_cname_strip.txt".format(output_base),
-        "{}_wilds.txt".format(output_base))
-    # generateWildList("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
-    # print(altdnsWildList)
-    # time.sleep(100000000)
-    # cleanWild("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
-    # cleanWild("{}_massdns_altdns_cname_strip.txt".format(output_base), altdnsWildList)
+        "{}_altdns_wilds.txt".format(output_base))
     print("\n\033[1;31mMasscan for altdns Complete\033[1;37m")
     time.sleep(1)
 
