@@ -368,6 +368,7 @@ def eyewitness(filename):
     #     filename,
     #     output_base,
     # )
+    os.system("rm {}/geckodriver.log".format(script_path))
     EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
         filename,
         output_base,
