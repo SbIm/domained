@@ -170,10 +170,11 @@ def massdns():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
     # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
+    os.system("cat {}_massdns_noaltdns.txt | grep *. > {}_wilds.txt".format(output_base, output_base))
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
         "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
-        True)
+        "{}_wilds.txt".format(output_base))
     # writeFiles("massdns")    
     os.system("rm " + "{}-domain-unique.txt".format(output_base))
     os.system("rm " + "{}-all.txt".format(output_base))
@@ -223,7 +224,7 @@ def altdns():
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
         "{}_massdns_altdns_cname_strip.txt".format(output_base),
-        False)
+        "{}_wilds.txt".format(output_base))
     # generateWildList("{}_massdns_altdns_strip.txt".format(output_base), altdnsWildList)
     # print(altdnsWildList)
     # time.sleep(100000000)
@@ -257,10 +258,12 @@ def generateWildList(massdnsres, dlist):
             dlist = wileListTemp
             index = index + 1
 
-def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
+def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
     global wildList
     with open(massdnsres, "r") as f:
         massdnsResLines = set(f)
+    with open(wilds, "r") as f:
+        wildLines = set(f)
     cnameOut = open(cnameOutput, "a")
     with open(output, "a") as f:
         for line in massdnsResLines:
@@ -273,83 +276,18 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, fixwildCard):
                 hosts = hosts[:-1]
             if not hosts.endswith(domain):
                 continue
-            triggerWild = False
-            checkList = []
-            if "CNAME" in line_data:
-                checkList = cnameWildList
-            else:
-                checkList = wildList
-            for wild in checkList:
-                if hosts.endswith("." + wild):
-                    triggerWild = True
-                    break
-            if triggerWild:
-                continue
             if hosts.startswith("*."):
                 hosts = hosts[2:]
-                if not hosts in wildList:
-                    if "CNAME" in line_data:
-                        cnameWildList.append(hosts)
-                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
-                    else:
-                        wildList.append(hosts)
-            if fixwildCard:
-                fixhosts = fixSubDomainWildCard(hosts)
-                if not fixhosts == hosts:
-                    hosts = fixhosts
-                    if "CNAME" in line_data:
-                        cnameWildList.append(hosts)
-                        # cnameOut.writelines("c_wild_list" + line_data + "\n")
-                    else:
-                        wildList.append(hosts)
-            f.writelines(hosts + "\n")
+                if "CNAME" in line_data:
+                    cnameOut.writelines(hosts + "\n")
+                f.writelines(hosts + "\n")
+            wild_line_data = "*." + line_data.split(".", 1)[1]
+            if wild_line_data in wildLines:
+                continue
             if "CNAME" in line_data:
                 cnameOut.writelines(hosts + "\n")
+            f.writelines(hosts + "\n")
     cnameOut.close()
-    print(wildList)
-    # if len(wildList) > 0:
-    #     cleanWild(output, wildList)
-    #     cleanWild(cnameOutput, wildList)
-
-def fixSubDomainWildCard(hosts):
-    if hosts.endswith("." + domain):
-        wildType = checkMainDomainWildCard(hosts)
-        if wildType > 0:
-            subhosts = hosts.split(".", 1)[1]
-            return fixSubDomainWildCardWithType(subhosts, wildType)
-        else:
-            return hosts
-    else:
-        return hosts
-
-def fixSubDomainWildCardWithType(hosts, wildType):
-    if hosts.endswith("." + domain):
-        if checkMainDomainWildCard(hosts) == wildType:
-            subhosts = hosts.split(".", 1)[1]
-            return fixSubDomainWildCardWithType(subhosts, wildType)
-        else:
-            return hosts
-    else:
-        return hosts
-
-# def cleanWild(fname, wildList):
-#     f = open(fname, "r")
-#     fArr = f.read().splitlines()
-#     f.close()
-#     index = 0
-#     while index < len(wildList):
-#         wildTemp = wildList[index]
-#         wildTemp = wildTemp[2:]
-#         fArrTemp = []
-#         for fLine in fArr:
-#             if not fLine.endswith("." + wildTemp):
-#                 fArrTemp.append(fLine)
-#         fArr = fArrTemp
-#         index = index + 1
-#     os.system("rm " + fname)
-#     with open(fname, 'w') as f:
-#         for fLine in fArr:
-#             f.write(fLine + "\n")
 
 def check_gopath(cmd, install_repo):
     if os.environ["GOPATH"]:
@@ -473,10 +411,12 @@ def writeFiles(name):
                 f.writelines("\n" + hosts)
                 if hosts not in uniqueDomainsList:
                     uniqueDomainsOut.writelines(hosts + "\n")
+                    uniqueDomainsList.append(hosts)
                 hostsArr = hosts.split(".", 1)
                 wildCardhosts = "*." + hostsArr[1]
                 if wildCardhosts not in uniqueDomainsList:
                     uniqueDomainsOut.writelines(wildCardhosts + "\n")
+                    uniqueDomainsList.append(wildCardhosts)
                 subdomainCounter = subdomainCounter + 1
         os.remove(fileName)
         uniqueDomainsOut.close()
