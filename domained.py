@@ -170,7 +170,7 @@ def massdns():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
     # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
-    os.system("cat {}_massdns_noaltdns.txt | grep *. > {}_wilds.txt".format(output_base, output_base))
+    os.system("cat {}_massdns_noaltdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_wilds.txt".format(output_base, output_base))
     stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
         "{}_massdns_noaltdns_strip.txt".format(output_base),
         "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
@@ -203,7 +203,7 @@ def altdns():
         for altdnsLine in altdnsData:
             altf.writelines(altdnsLine + "\n")
             altdnsLine = altdnsLine.split(".", 1)[1]
-            altdnsLine = "*." + altdnsLine
+            altdnsLine = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + altdnsLine
             altf.writelines(altdnsLine + "\n")
     os.system("rm {}-altdns-data".format(output_base))
     os.system("sort -u altdnsTemp -o {}-altdns-data".format(output_base))
@@ -218,38 +218,13 @@ def altdns():
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
     os.system(massdnsCMD)
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
-    os.system("cat {}_massdns_altdns.txt | grep *. > {}_altdns_wilds.txt".format(output_base, output_base))
+    os.system("cat {}_massdns_altdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_altdns_wilds.txt".format(output_base, output_base))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
         "{}_massdns_altdns_cname_strip.txt".format(output_base),
         "{}_altdns_wilds.txt".format(output_base))
     print("\n\033[1;31mMasscan for altdns Complete\033[1;37m")
     time.sleep(1)
-
-def generateWildList(massdnsres, dlist):
-    with open(massdnsres, "r") as f:
-        massdnsResLines = set(f)
-        for line in massdnsResLines:
-            hosts = "".join(line)  
-            hosts = hosts.split()[0]
-            if hosts.endswith("."):
-                hosts = hosts[:-1]
-            if hosts.startswith("*."):
-                dlist.append(hosts)
-    if len(dlist) > 0:
-        dlist.sort(key = lambda i:len(i),reverse=False)
-        index = 0
-        while index < len(dlist):
-            wildTemp = dlist[index]
-            wildTemp = wildTemp[2:]
-            wileListTemp = []
-            for wildCard in dlist:
-                if not wildCard.endswith("." + wildTemp):
-                    wileListTemp.append(wildCard)
-                elif wildCard == "*." + wildTemp:
-                    wileListTemp.append(wildCard)
-            dlist = wileListTemp
-            index = index + 1
 
 def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
     global wildList
@@ -261,7 +236,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
         cleanWildLines = [wildLines[0]]
         for wileLine in wildLines:
             for cleanWild in cleanWildLines:
-                if cleanWild[2:] in wileLine[2:]:
+                if cleanWild[33:] in wileLine[33:]:
                     break
             cleanWildLines.append(wileLine)
 
@@ -277,13 +252,13 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
                 hosts = hosts[:-1]
             if not hosts.endswith(domain):
                 continue
-            if hosts.startswith("*.") and line_data in cleanWildLines:
-                hosts = hosts[2:]
+            if hosts.startswith("xxfeedcafejfoiaeowjnbnmcoampqoqp.") and line_data in cleanWildLines:
+                hosts = hosts[33:]
                 if "CNAME" in line_data:
                     cnameOut.writelines(hosts + "\n")
                 f.writelines(hosts + "\n")
                 continue
-            wild_line_data = "*." + line_data.split(".", 1)[1]
+            wild_line_data = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + line_data.split(".", 1)[1]
             if wild_line_data in wildLines:
                 continue
             if "CNAME" in line_data:
