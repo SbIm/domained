@@ -220,6 +220,9 @@ def altdns():
     os.system(massdnsCMD)
     os.system("rm {}".format("{}-altdns-data".format(output_base)))
     os.system("cat {}_massdns_altdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_altdns_wilds.txt".format(output_base, output_base))
+    os.system("cat {}_altdns_wilds.txt {}_wilds.txt > wildTemp".format(output_base, output_base))
+    os.system("rm {}_altdns_wilds.txt".format(output_base))
+    os.system("mv wildTemp {}_altdns_wilds.txt".format(output_base))
     stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
         "{}_massdns_altdns_strip.txt".format(output_base),
         "{}_massdns_altdns_cname_strip.txt".format(output_base),
@@ -267,8 +270,13 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
                     cnameOut.writelines(hosts + "\n")
                 f.writelines(hosts + "\n")
                 continue
-            wild_line_data = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + line_data.split(".", 1)[1]
-            if wild_line_data in wildLines:
+            wild_line_data = line_data.split(".", 1)[1]
+            writeThisLine = True
+            for cleanWild in cleanWildLines:
+                if cleanWild[33:] in wild_line_data:
+                    writeThisLine = False
+                    break
+            if not writeThisLine:
                 continue
             if "CNAME" in line_data:
                 cnameOut.writelines(hosts + "\n")
