@@ -235,14 +235,17 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
         wildLines = f.readlines()
         wildLines.sort(key=lambda x: len(x))
         cleanWildLines = [wildLines[0]]
-        for wileLine in wildLines:
+        for wildLine in wildLines:
+            writeThisLine = True
             for cleanWild in cleanWildLines:
-                if cleanWild[33:] in wileLine[33:]:
+                if cleanWild[33:] in wildLine[33:]:
+                    writeThisLine = False
                     break
-            cleanWildLines.append(wileLine)
+            if writeThisLine:
+                cleanWildLines.append(wildLine)
     with open(wilds, "w+") as f:
         for cleanWild in cleanWildLines:
-            f.writelines(cleanWild + "\n")
+            f.writelines(cleanWild)
 
     # pdb.set_trace()
 
