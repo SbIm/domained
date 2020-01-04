@@ -25,6 +25,7 @@ import requests
 import smtplib
 import time
 import subprocess
+import pdb
 from signal import signal, alarm, SIGALRM
 from installer import upgradeFiles
 from shutil import which
@@ -241,7 +242,9 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
             cleanWildLines.append(wileLine)
     with open(wilds, "w+") as f:
         for cleanWild in cleanWildLines:
-            f.wildLines(cleanWild + "\n")
+            f.writelines(cleanWild + "\n")
+
+    # pdb.set_trace()
 
     cnameOut = open(cnameOutput, "a")
     with open(output, "a") as f:
@@ -574,8 +577,4 @@ if __name__ == "__main__":
     active = args.active
     useEyewitness = args.eyewitness
     mainWildcard = checkMainDomainWildCard(domain)
-    if mainWildcard == AWILD:
-        wildList.append(domain)
-    elif mainWildcard == CNAMEWILD:
-        cnameWildList.append(domain)
     options()
