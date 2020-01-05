@@ -257,7 +257,7 @@ def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
         for line in massdnsResLines:
             hosts = line
             line_data = line
-            if hosts.endswith(" A 127.0.0.1"):
+            if " A 127.0.0.1" in hosts:
                 continue
             hosts = hosts.split()[0]
             if hosts.endswith("."):
