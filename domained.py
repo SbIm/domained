@@ -162,7 +162,7 @@ def massdns():
     # global wildList
     print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
     # 似乎结果也包含了NXDOMAIN且有CNAME的类型
-    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -o S -w {}_massdns_noaltdns.txt".format(
+    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -s 1000 -o S -w {}_massdns_noaltdns.txt".format(
         "{}-domain-unique.txt".format(output_base),
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         script_path,
