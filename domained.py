@@ -89,64 +89,11 @@ newpath = r"output"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-
-def banner():
-    print(
-        """\033[1;31m
-         ___/ /__  __ _  ___ _(_)__  ___ ___/ /
-        / _  / _ \/  ' \/ _ `/ / _ \/ -_) _  /
-        \_,_/\___/_/_/_/\_,_/_/_//_/\__/\_,_/
-    \033[1;34m\t\t\tgithub.com/cakinney\033[1;m"""
-    )
-
-def sublist3r(brute=False):
-    print("\n\n\033[1;31mRunning Sublist3r \n\033[1;37m")
-    sublist3rFileName = "{}_sublist3r.txt".format(output_base)
-    Subcmd = "python {} -v -t 15 {} -d {} -o {}".format(
-        os.path.join(script_path, "bin/Sublist3r/sublist3r.py"),
-        "-b" if brute else "",
-        domain,
-        sublist3rFileName,
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(Subcmd))
-    os.system(Subcmd)
-    writeFiles("sublist3r")
-    print("\n\033[1;31mSublist3r Complete\033[1;37m")
-    time.sleep(1)
-    #if brute:
-    #    eyewitness(sublist3rFileName)
-
-
-def enumall():
-    print("\n\n\033[1;31mRunning Enumall \n\033[1;37m")
-    enumallCMD = "python {} {}".format(
-        os.path.join(script_path, "bin/domain/enumall.py"), domain
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(enumallCMD))
-    os.system(enumallCMD)
-    print("\n\033[1;31menumall Complete\033[1;37m")
-    rmcsvCMD = "rm {}/{}.csv".format(
-        script_path, domain
-    )
-    movlstCMD = "mv {}/{}.lst {}_enumall.lst".format(
-        script_path, domain, output_base
-    )
-    os.system(rmcsvCMD)
-    os.system(movlstCMD)
-    writeFiles("enumall")    
-    time.sleep(1)
-
-def subbrute():
+def shufflebrute():
     print("\n\n\033[1;31mRunning subbrute \n\033[1;37m")
     word_file = os.path.join(
-        # script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
         script_path, "bin/sublst/all.txt"
     )
-    # subbruteCMD = "python bin/subbrute/subbrute.py -s {} -c 15 -o {}_subbrute.txt {}".format(
-    #     word_file, 
-    #     output_base,
-    #     domain,
-    # )
     subbruteCMD = "python bin/massdns/scripts/subbrute.py {} {} > {}_subbrute.txt".format(
         word_file, 
         domain,
@@ -307,7 +254,7 @@ def check_gopath(cmd, install_repo):
             return True
 
 
-def amass(rerun=0):
+def amass_passive(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
         amassFileName = "{}_amass.txt".format(output_base)
@@ -357,23 +304,6 @@ def subfinder(rerun=0):
         if check_gopath("subfinder", "github.com/subfinder/subfinder") and rerun != 1:
             subfinder(rerun=1)
 
-
-def eyewitness(filename):
-    print("\n\n\033[1;31mRunning EyeWitness  \n\033[1;37m")
-    # EWHTTPScriptIPS = "meg -d 10 -c 200 -s 200 / {} {}_meg".format(
-    #     filename,
-    #     output_base,
-    # )
-    os.system("rm {}/geckodriver.log".format(script_path))
-    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
-        filename,
-        output_base,
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(EWHTTPScriptIPS))
-    os.system(EWHTTPScriptIPS)
-    print("\a")
-
-
 def writeFiles(name):
     """Writes info of all hosts from subhosts
     """
@@ -382,11 +312,8 @@ def writeFiles(name):
     subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
     uniqueDomainsOut = open(subdomainUniqueFile, "a+")
     fileExt = {
-        "sublist3r": ".txt",
-        "enumall": ".lst",
         "massdns": ".txt",
         "amass": ".txt",
-        "subbrute": ".txt",
         "subfinder": ".txt",
         "exfdns": ".txt",
     }
@@ -418,63 +345,6 @@ def writeFiles(name):
     except:
         print("\nError Opening %s File!\n" % name)
     return subdomainCounter
-
-def generateUrl():
-    print("\nGenerating Urls Lists\n")
-    altdnsSubdomainFile = "{}_massdns_altdns_strip.txt".format(output_base)
-    altdnsCnameSubdomainFile = "{}_massdns_altdns_cname_strip.txt".format(output_base)
-    noaltdnsSubdomainFile = "{}_massdns_noaltdns_strip.txt".format(output_base)
-    noaltdnsCnameSubdomainFile = "{}_massdns_noaltdns_cname_strip.txt".format(output_base)
-    all4oneFile = "{}_massdns_all4one.txt".format(output_base)
-    all4oneCnameFile = "{}_massdns_all4one_cname.txt".format(output_base)
-    if mainWildcard == NOWILD:
-        os.system("cat {} {} > temp.txt".format(altdnsSubdomainFile, noaltdnsSubdomainFile))
-        os.system("cat {} {} > cnametemp.txt".format(altdnsCnameSubdomainFile, noaltdnsCnameSubdomainFile))
-        os.system("rm {} {} {} {}".format(altdnsSubdomainFile, noaltdnsSubdomainFile, 
-                                        altdnsCnameSubdomainFile, noaltdnsCnameSubdomainFile))
-    else:
-        os.system("cat {} > temp.txt".format(noaltdnsSubdomainFile))
-        os.system("cat {} > cnametemp.txt".format(noaltdnsCnameSubdomainFile))
-        os.system("rm {} {}".format(noaltdnsSubdomainFile, noaltdnsCnameSubdomainFile))
-    os.system("sort -u temp.txt -o {}".format(all4oneFile))
-    os.system("sort -u cnametemp.txt -o {}".format(all4oneCnameFile))
-    os.system("rm temp.txt")
-    os.system("rm cnametemp.txt")
-    with open(all4oneFile, "r") as f:
-        uniqueDomains = f.read().splitlines()
-        subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-        uniqueDomainsUrlOut = open(subdomainUrlUniqueFile, "w")
-        for domains in uniqueDomains:
-            domains = domains.replace("\n", "")
-            if domains.endswith(domain):
-                uniqueDomainsUrlOut.writelines("https://{}\n".format(domains))
-                if ports is not False:
-                    uniqueDomainsUrlOut.writelines("https://{}:8443\n".format(domains))
-                if secure is False:
-                    uniqueDomainsUrlOut.writelines("http://{}\n".format(domains))
-                    if ports is not False:
-                        uniqueDomainsUrlOut.writelines("http://{}:8080\n".format(domains))
-        uniqueDomainsUrlOut.close()
-
-def checkMainDomainWildCard(checkdomain):
-    # print("\nChecking wildcard\n")
-    rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
-    os.system("dig {} @8.8.8.8 > tempCheck".format(checkdomain))
-    dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
-    dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
-    dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
-    dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
-    os.system("rm tempCheck c_tempCheck")
-    if dig_c_noerror > 0:
-        if dig_c_cname > 0:
-            return CNAMEWILD    # sib CNAME
-        elif dig_cname > 0:    
-            return NOWILD       # sib A, domain CNAME
-        else:
-            return AWILD        # sib A, domain A
-    else:
-        return NOWILD
 
 def notified(sub, msg):
     notifySub = sub
@@ -547,24 +417,17 @@ def options():
             # clean old results
             os.system("rm -dfr output/{}".format(domain))
             os.system("mkdir output/{}".format(domain))
-            # notify domained begins
-            if notify:
-                notified("domained Script Started", "domained Script Started for {}".format(domain))
-            enumall()
+            notified("domained Script Started", "domained Script Started for {}".format(domain))
             subfinder()
-            amass()
+            amass_passive()
             extractFDNS()
-            if mainWildcard == NOWILD:
-                subbrute()
+            shufflebrute()
             massdns()
-            if mainWildcard == NOWILD:
-                altdns()
+            altdns()
             generateUrl()
-            if useEyewitness:
-                subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-                eyewitness(subdomainUrlUniqueFile)
-            if notify:
-                notified("domained Script Finished", "domained Script Finished for {}".format(domain))
+            subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
+            eyewitness(subdomainUrlUniqueFile)
+            notified("domained Script Finished", "domained Script Finished for {}".format(domain))
         else:
             print("\nPlease provide a domain. Ex. -d example.com")
     print("\n\033[1;34mAll your subdomain are belong to us\033[1;37m")
@@ -572,7 +435,6 @@ def options():
 
 if __name__ == "__main__":
     # global wildList
-    banner()
     args = get_args()
     domain = args.domain
     script_path = os.path.dirname(os.path.realpath(__file__))
@@ -589,5 +451,4 @@ if __name__ == "__main__":
     notify = args.notify
     active = args.active
     useEyewitness = args.eyewitness
-    mainWildcard = checkMainDomainWildCard(domain)
     options()
