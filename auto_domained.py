@@ -43,6 +43,7 @@ while 1:
             File_llf = open(local_log_file, "a")
             File_llf.writelines(pastebin_domain+'\n')
             File_llf.close()
-            time.sleep(3600)
-    time.sleep(3600*24)
+            time.sleep(300)
+            os.system("rm geckodriver.log")
+    time.sleep(600)
 
