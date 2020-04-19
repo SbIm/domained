@@ -90,22 +90,6 @@ newpath = r"output"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-def shufflebrute():
-    print("\n\n\033[1;31mRunning subbrute \n\033[1;37m")
-    word_file = os.path.join(
-        script_path, "bin/sublst/all.txt"
-    )
-    subbruteCMD = "shuffledns -d {} -list {} bin/massdns/scripts/subbrute.py -r resolvers.txt  -o shuffledns.txt -silent".format(
-        domain,
-        word_file, 
-        output_base,
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(subbruteCMD))
-    os.system(subbruteCMD)
-    writeFiles("subbrute")
-    print("\n\033[1;31mSubbrute Complete\033[1;37m")
-    time.sleep(1)
-
 def massdns():
     # global wildList
     print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
@@ -304,6 +288,24 @@ def subfinder(rerun=0):
         if check_gopath("subfinder", "github.com/subfinder/subfinder") and rerun != 1:
             subfinder(rerun=1)
 
+def shufflebrute():
+    print("\n\n\033[1;31mRunning shufflebrute \n\033[1;37m")
+    word_file = os.path.join(
+        script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
+    )
+    shufflebruteFileName = "{}_shufflebrute.txt".format(output_base)
+    shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -silent".format(
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
+        domain,
+        word_file,
+        shufflebruteFileName,
+    )
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(shufflebruteCMD))
+    os.system(shufflebruteCMD)
+    writeFiles("shufflebrute")
+    print("\n\033[1;shufflebrute Complete\033[1;37m")
+    time.sleep(1)
+
 def writeFiles(name):
     """Writes info of all hosts from subhosts
     """
@@ -316,6 +318,7 @@ def writeFiles(name):
         "amass": ".txt",
         "subfinder": ".txt",
         "exfdns": ".txt",
+        "shufflebrute": ".txt",
     }
     fileName = output_base + "_" + name + fileExt[name]
 
@@ -408,8 +411,10 @@ def notified(sub, msg):
 def options():
     if fresh:
         refreshResolvers(domain)
+        return
     if install or upgrade:
         upgradeFiles()
+        return
     else:
         if domain:
             # clean old results
@@ -419,12 +424,15 @@ def options():
             subfinder()
             amass_passive()
             extractFDNS()
+            starttime = datetime.datetime.now()
             shufflebrute()
-            massdns()
-            altdns()
-            generateUrl()
-            subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-            eyewitness(subdomainUrlUniqueFile)
+            endtime = datetime.datetime.now()
+            print (endtime - starttime).seconds
+            # massdns()
+            # altdns()
+            # generateUrl()
+            # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
+            # eyewitness(subdomainUrlUniqueFile)
             notified("domained Script Finished", "domained Script Finished for {}".format(domain))
         else:
             print("\nPlease provide a domain. Ex. -d example.com")
