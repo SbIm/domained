@@ -316,10 +316,17 @@ def shufflebrute():
         script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
     )
     shufflebruteFileName = "{}_shufflebrute.txt".format(output_base)
-    shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -v".format(
-        os.path.join(script_path, "bin/massdns/bin/massdns"),
-        domain,
+    # shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -v".format(
+    #     os.path.join(script_path, "bin/massdns/bin/massdns"),
+    #     domain,
+    #     word_file,
+    #     shufflebruteFileName,
+    # )
+
+    shufflebruteCMD = ".bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
+        domain,
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
         shufflebruteFileName,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(shufflebruteCMD))
@@ -405,14 +412,14 @@ def options():
             os.system("rm -dfr output/{}".format(domain))
             os.system("mkdir output/{}".format(domain))
             notified("domained Script Started", "domained Script Started for {}".format(domain))
-            subfinder()
-            amass_passive()
-            extractFDNS()
+            # subfinder()
+            # amass_passive()
+            # extractFDNS()
             shufflebrute()
-            os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
-            os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
-            # massdns()
-            # altdns()
+            # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
+            # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
+
+
             # generateUrl()
             # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
             # eyewitness(subdomainUrlUniqueFile)
