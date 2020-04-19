@@ -1,46 +1,15 @@
 # domained
 A domain name enumeration tool
 
-**Gist:** Some ~~terrible~~ continually updated python code leveraging some awesome tools that I use for bug bounty reconnaissance. 
-
-**The tools contained in domained requires Kali Linux (preferred) or Debian 7+ and Recon-ng** 
-
-domained uses several subdomain enumeration tools and wordlists to create a unique list of subdomains that are passed to EyeWitness for reporting with categorized screenshots, server response headers and signature based default credential checking. *(resources are saved to ./bin and output is saved to ./output)*
-
-##### Initial Install: 
-* domained tools: `python3 domained.py --install`
-* Python required modules: `sudo pip install -r ./ext/requirements.txt`
-###### Other Dependencies: 
-* [ldns](https://www.nlnetlabs.nl/documentation/ldns/) library for DNS programming:
-    * `sudo apt-get install libldns-dev -y`
-* [Go](https://golang.org) Programming Language: 
-    * `sudo apt-get install golang`
-
-
-**_NOTE: This is an active recon – only perform on applications that you have permission to test against._**
-
-##### Tools leveraged:
-
-###### Subdomain Enumeraton Tools:
-1. [Sublist3r](https://github.com/aboul3la/Sublist3r) by Ahmed Aboul-Ela 
-2. [enumall](https://github.com/jhaddix/domain) by Jason Haddix 
-3. [Knock](https://github.com/guelfoweb/knock) by Gianni Amato 
-4. [Subbrute](https://github.com/TheRook/subbrute) by TheRook 
-5. [massdns](https://github.com/blechschmidt/massdns) by B. Blechschmidt
-6. [Recon-ng](https://bitbucket.org/LaNMaSteR53/recon-ng) by Tim Tomes (LaNMaSteR53)
-7. [Amass](https://github.com/OWASP/Amass) by Jeff Foley (caffix)
-8. [SubFinder](https://github.com/subfinder/subfinder) by by Ice3man543
-
-###### Reporting + Wordlists:
-- [EyeWitness](https://github.com/FortyNorthSecurity/EyeWitness) by ChrisTruncer  
-- [SecList](https://github.com/danielmiessler/SecLists) (DNS Recon List) by Daniel Miessler 
-- [LevelUp All.txt Subdomain List](https://gist.github.com/jhaddix/86a06c5dc309d08580a018c66354a056) by Jason Haddix 
-
 ##### Usage
 ````
 First Step:
-Install Required Python Modules: sudo pip install -r ./ext/requirements.txt
-Install Tools: sudo python3 domained.py --install
+Install or Update: 
+pip install -r ./ext/requirements.txt
+python3 domained.py --install/upgrade
+
+Refresh resolvers: 
+python3 domained.py -target.com --refresh  
 
 Example 1: python3 domained.py -d example.com
 Uses subdomain example.com (Sublist3r (+subbrute), enumall, Knock, Amass, and SubFinder)
