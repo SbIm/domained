@@ -242,9 +242,9 @@ def amass_passive(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
         starttime = datetime.datetime.now()
-        
+
         amassFileName = "{}_amass.txt".format(output_base)
-        amassCmd = "amass enum -passive -v -d {} -o {}".format(domain, amassFileName)
+        amassCmd = "amass enum -passive -d {} -o {}".format(domain, amassFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(amassCmd))
         os.system(amassCmd)
         os.system("cat {} >> {}".format(amassFileName, subdomainAllFile))
