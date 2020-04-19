@@ -38,7 +38,8 @@ def upgradeFiles():
     movephantomjs = "mv phantomjs bin/"
     os.system(movephantomjs)
 
-    amassUpgrade = "go get -u -v github.com/OWASP/Amass/..."
+    amassUpgrade = "go get -u -v github.com/OWASP/Amass/v3/..."
+    os.system("export GO111MODULE=on")
     os.system(amassUpgrade)
     subfinderUpgrade = "go get -u -v github.com/subfinder/subfinder"
     os.system(subfinderUpgrade)

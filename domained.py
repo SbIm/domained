@@ -257,8 +257,7 @@ def amass_passive(rerun=0):
         time.sleep(1)
     else:
         print("\n\n\033[1;3mAmass is not currently in your $PATH \n\033[1;37m")
-        if check_gopath("amass", "github.com/OWASP/Amass/...") and rerun != 1:
-            amass(rerun=1)
+        
 
 def extractFDNS():
     print("\n\n\033[1;31mRunning extractFDNS \n\033[1;37m")
