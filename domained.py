@@ -28,6 +28,7 @@ import subprocess
 import pdb
 from signal import signal, alarm, SIGALRM
 from installer import upgradeFiles
+from installer import refreshResolvers
 from shutil import which
 
 
