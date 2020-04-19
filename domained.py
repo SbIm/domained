@@ -257,7 +257,7 @@ def amass_passive(rerun=0):
         time.sleep(1)
     else:
         print("\n\n\033[1;3mAmass is not currently in your $PATH \n\033[1;37m")
-        
+
 
 def extractFDNS():
     print("\n\n\033[1;31mRunning extractFDNS \n\033[1;37m")
@@ -316,7 +316,7 @@ def shufflebrute():
         script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
     )
     shufflebruteFileName = "{}_shufflebrute.txt".format(output_base)
-    shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -silent".format(
+    shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -v".format(
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         domain,
         word_file,
@@ -328,7 +328,7 @@ def shufflebrute():
 
     endtime = datetime.datetime.now()
     os.system("echo Complete shufflebrute for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
-    d_count = int(subprocess.check_output('wc -l {}'.format(amassFileName), shell=True).split()[0])
+    d_count = int(subprocess.check_output('wc -l {}'.format(shufflebruteFileName), shell=True).split()[0])
     os.system("echo shufflebrute find {} subs >> {}".format(d_count, staticsFile))
     print("\n\033[1;shufflebrute Complete\033[1;37m")
     time.sleep(1)
