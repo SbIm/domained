@@ -241,12 +241,19 @@ def check_gopath(cmd, install_repo):
 def amass_passive(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
+        starttime = datetime.datetime.now()
+        
         amassFileName = "{}_amass.txt".format(output_base)
-        amassCmd = "amass enum -passive -d {} -o {}".format(domain, amassFileName)
+        amassCmd = "amass enum -passive -v -d {} -o {}".format(domain, amassFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(amassCmd))
         os.system(amassCmd)
+        os.system("cat {} >> {}".format(amassFileName, subdomainAllFile))
+
+        endtime = datetime.datetime.now()
+        os.system("echo Complete amass_passive for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
+        d_count = int(subprocess.check_output('wc -l {}'.format(amassFileName), shell=True).split()[0])
+        os.system("echo amass_passive find {} subs >> {}".format(d_count, staticsFile))
         print("\n\033[1;31mAmass Complete\033[1;37m")
-        writeFiles("amass")
         time.sleep(1)
     else:
         print("\n\n\033[1;3mAmass is not currently in your $PATH \n\033[1;37m")
@@ -255,20 +262,27 @@ def amass_passive(rerun=0):
 
 def extractFDNS():
     print("\n\n\033[1;31mRunning extractFDNS \n\033[1;37m")
+    starttime = datetime.datetime.now()
+
     fdns_domain_file = "{}/bin/ExtractSubdomainFromFDNS/{}.csv".format(script_path ,domain)
     if os.path.exists(fdns_domain_file):
         exFDNSf = open(fdns_domain_file, "r")
         exFDNSLines = exFDNSf.read().splitlines()
         exFDNSf.close()
-
-        with open("{}_exfdns.txt".format(output_base), "a") as f:
+        exFDNS_outputFileName = "{}_exfdns.txt".format(output_base)
+        with open(exFDNS_outputFileName, "a") as f:
             for line in exFDNSLines:
                 line_strs = line.split(',')
                 if len(line_strs) > 2:
                     if line_strs[2] == '\"a\"' or line_strs[2] == '\"cname\"':
                         line_subdomain = line_strs[1][1:-1]  
                         f.writelines(line_subdomain + "\n")
-        writeFiles("exfdns")
+        os.system("cat {} >> {}".format(exFDNS_outputFileName, subdomainAllFile))
+
+        endtime = datetime.datetime.now()
+        os.system("echo Complete extractFDNS for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
+        d_count = int(subprocess.check_output('wc -l {}'.format(exFDNS_outputFileName), shell=True).split()[0])
+        os.system("echo extractFDNS find {} subs >> {}".format(d_count, staticsFile))
         print("\n\033[1;31mextractFDNS Complete\033[1;37m")
     else:
         print("\nNo csv data for {}!\n".format(domain))
@@ -276,12 +290,19 @@ def extractFDNS():
 def subfinder(rerun=0):
     if which("subfinder"):
         print("\n\n\033[1;31mRunning Subfinder \n\033[1;37m")
+        starttime = datetime.datetime.now()
+
         subfinderFileName = "{}_subfinder.txt".format(output_base)
         subfinderCmd = "subfinder -d {} -o {}".format(domain, subfinderFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(subfinderCmd))
         os.system(subfinderCmd)
+        os.system("cat {} >> {}".format(subfinderFileName, subdomainAllFile))
+
+        endtime = datetime.datetime.now()
+        os.system("echo Complete subfinder for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
+        d_count = int(subprocess.check_output('wc -l {}'.format(subfinderFileName), shell=True).split()[0])
+        os.system("echo subfinder find {} subs >> {}".format(d_count, staticsFile))
         print("\n\033[1;31msubfinder Complete\033[1;37m")
-        writeFiles("subfinder")
         time.sleep(1)
     else:
         print("\n\n\033[1;3mSubfinder is not currently in your $PATH \n\033[1;37m")
@@ -290,6 +311,8 @@ def subfinder(rerun=0):
 
 def shufflebrute():
     print("\n\n\033[1;31mRunning shufflebrute \n\033[1;37m")
+    starttime = datetime.datetime.now()
+
     word_file = os.path.join(
         script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
     )
@@ -302,52 +325,14 @@ def shufflebrute():
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(shufflebruteCMD))
     os.system(shufflebruteCMD)
-    writeFiles("shufflebrute")
+    os.system("cat {} >> {}".format(shufflebruteFileName, subdomainAllFile))
+
+    endtime = datetime.datetime.now()
+    os.system("echo Complete shufflebrute for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
+    d_count = int(subprocess.check_output('wc -l {}'.format(amassFileName), shell=True).split()[0])
+    os.system("echo shufflebrute find {} subs >> {}".format(d_count, staticsFile))
     print("\n\033[1;shufflebrute Complete\033[1;37m")
     time.sleep(1)
-
-def writeFiles(name):
-    """Writes info of all hosts from subhosts
-    """
-    subdomainCounter = 0
-    subdomainAllFile = "{}-all.txt".format(output_base)
-    subdomainUniqueFile = "{}-domain-unique.txt".format(output_base)
-    uniqueDomainsOut = open(subdomainUniqueFile, "a+")
-    fileExt = {
-        "massdns": ".txt",
-        "amass": ".txt",
-        "subfinder": ".txt",
-        "exfdns": ".txt",
-        "shufflebrute": ".txt",
-    }
-    fileName = output_base + "_" + name + fileExt[name]
-
-    print("\n Opening %s File" % name)
-    print("\n path is %s " % fileName)
-    try:
-        with open(fileName, "r") as f:
-            SubHosts = f.read().splitlines()
-
-        with open(subdomainAllFile, "a") as f:
-            f.writelines("\n\n" + name)
-            for hosts in SubHosts:
-                hosts = "".join(hosts)
-                if name == "subfinder" and hosts.startswith('.'):
-                    hosts = hosts[1:]
-                f.writelines("\n" + hosts)
-                uniqueDomainsOut.writelines(hosts + "\n")
-                hostsArr = hosts.split(".", 1)
-                wildCardhosts = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + hostsArr[1]
-                uniqueDomainsOut.writelines(wildCardhosts + "\n")
-                subdomainCounter = subdomainCounter + 1
-        os.remove(fileName)
-        uniqueDomainsOut.close()
-        os.system("sort -u {} -o sorted_temp.txt".format(subdomainUniqueFile))
-        os.system("mv sorted_temp.txt {}".format(subdomainUniqueFile))
-        print("\n{} Subdomains discovered by {}".format(subdomainCounter, name))
-    except:
-        print("\nError Opening %s File!\n" % name)
-    return subdomainCounter
 
 def notified(sub, msg):
     notifySub = sub
@@ -424,10 +409,9 @@ def options():
             subfinder()
             amass_passive()
             extractFDNS()
-            starttime = datetime.datetime.now()
             shufflebrute()
-            endtime = datetime.datetime.now()
-            print (endtime - starttime).seconds
+            os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
+            os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
             # massdns()
             # altdns()
             # generateUrl()
@@ -445,6 +429,8 @@ if __name__ == "__main__":
     domain = args.domain
     script_path = os.path.dirname(os.path.realpath(__file__))
     output_base = "{}/output/{}/{}".format(script_path, domain, domain)
+    subdomainAllFile = "{}-all.txt".format(output_base)
+    staticsFile = "{}-reconstatics.txt".format(output_base)
     secure = args.secure
     bruteforce = args.bruteforce
     upgrade = args.upgrade

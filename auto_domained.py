@@ -38,7 +38,7 @@ while 1:
         locallog_domains = f2.read().splitlines()
     for pastebin_domain in pastebin_domains:
         if pastebin_domain not in locallog_domains:
-            os.system("python3 domained.py -d {} -p --notify --eyewitness".format(pastebin_domain.split(',')[0]))
+            os.system("python3 domained.py -d {}".format(pastebin_domain.split(',')[0]))
             locallog_domains.append(pastebin_domain)
             File_llf = open(local_log_file, "a")
             File_llf.writelines(pastebin_domain+'\n')
