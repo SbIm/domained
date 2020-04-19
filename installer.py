@@ -5,6 +5,14 @@ import subprocess
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
+def refreshResolvers(target):
+    os.chdir(SCRIPT_PATH)
+    os.system("dnsvalidator -tL https://public-dns.info/nameservers.txt -threads 20 -o temp_resolvers.txt")
+    os.system("git clone https://github.com/Abss0x7tbh/bass.git ./bin/bass")
+    os.system("mv temp_resolvers.txt ./bin/bass/resolvers/public.txt")
+    os.system("python3 bin/bass/bass.py -d paypal.com -o temp_resolvers.txt")
+    os.system("python3 health_resolvers.py buzzfeed.com")
+    os.system("mv temp_health_resolvers.txt resolvers.txt")
 
 def upgradeFiles():
     """Upgrade all the required files
@@ -30,13 +38,6 @@ def upgradeFiles():
     movephantomjs = "mv phantomjs bin/"
     os.system(movephantomjs)
 
-    # wordlists
-    sublstUpgrade = "git clone https://gist.github.com/jhaddix/86a06c5dc309d08580a018c66354a056 ./bin/sublst"
-    os.system(sublstUpgrade)
-    SLsublstUpgrade = "wget -O ./bin/sublst/sl-domains.txt https://raw.githubusercontent.com/\
-danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierce-reconng.txt"
-    os.system(SLsublstUpgrade)
-
     amassUpgrade = "go get -u -v github.com/OWASP/Amass/..."
     os.system(amassUpgrade)
     subfinderUpgrade = "go get -u -v github.com/subfinder/subfinder"
@@ -45,12 +46,25 @@ danielmiessler/SecLists/master/Discovery/DNS/sortedcombined-knock-dnsrecon-fierc
     os.system(massdnsUpgrade)
     massdnsMake = "make -C ./bin/massdns"
     os.system(massdnsMake)
-
-    # os.system("cp ./bin/massdns/lists/resolvers.txt ./")
-    os.system("pip3 install dnsgen")
-    os.system("git clone https://github.com/assetnote/commonspeak2-wordlists.git ./bin/commonspeak2-wordlists")
-    os.system("git clone https://github.com/SbIm/ExtractSubdomainFromFDNS.git ./bin/ExtractSubdomainFromFDNS")
     os.system("go get -u -v github.com/jakejarvis/subtake")
+    os.system("pip3 install dnsgen")
+    os.system("GO111MODULE=on go get -u -v github.com/projectdiscovery/shuffledns/cmd/shuffledns")
+    os.system("git clone https://github.com/SbIm/ExtractSubdomainFromFDNS.git ./bin/ExtractSubdomainFromFDNS")
+    os.system("git clone https://github.com/vortexau/dnsvalidator.git ./bin/dnsvalidator")
+    dnsvalidatorpath = os.path.join(binpath, "dnsvalidator")
+    os.chdir(dnsvalidatorpath)
+    os.system("python3 setup.py install")
+    os.chdir(SCRIPT_PATH)    
+    os.system("git clone https://github.com/Abss0x7tbh/bass.git ./bin/bass")
+
+    # wordlists
+    # bin/commonspeak2-wordlists/subdomains/subdomains.txt, 48k
+    os.system("git clone https://github.com/assetnote/commonspeak2-wordlists.git ./bin/commonspeak2-wordlists")
+    # bin/SecLists/Discovery/DNS/dns-Jhaddix.txt, 2170k
+    # bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt, 110k
+    # bin/SecLists/Discovery/DNS/subdomains-top1million-20000.txt, 20k
+    # bin/SecLists/Discovery/DNS/subdomains-top1million-5000.txt, 5k
+    os.system("git clone https://github.com/danielmiessler/SecLists.git ./bin/SecLists")
 
     print("\n\033[1;31mAll tools installed \033[1;37m")
     print("Changing back to old working directory: {}".format(old_wd))

@@ -70,7 +70,7 @@ def get_args():
         "--bruteall", help="Bruteforce JHaddix All", action="store_true", default=False
     )
     parser.add_argument(
-        "--fresh", help="Remove output Folder", action="store_true", default=False
+        "--fresh", help="Refresh resolvers", action="store_true", default=False
     )
     parser.add_argument(
         "--notify", help="Notify when script completed", action="store_true", default=False
@@ -94,9 +94,9 @@ def shufflebrute():
     word_file = os.path.join(
         script_path, "bin/sublst/all.txt"
     )
-    subbruteCMD = "python bin/massdns/scripts/subbrute.py {} {} > {}_subbrute.txt".format(
-        word_file, 
+    subbruteCMD = "shuffledns -d {} -list {} bin/massdns/scripts/subbrute.py -r resolvers.txt  -o shuffledns.txt -silent".format(
         domain,
+        word_file, 
         output_base,
     )
     print("\n\033[1;31mRunning Command: \033[1;37m{}".format(subbruteCMD))
@@ -133,7 +133,6 @@ def altdns():
     # global altdnsWildList
     print("\n\n\033[1;31mRunning altdns \n\033[1;37m")
     word_file = os.path.join(
-        # script_path, "bin/sublst/all.txt" if bruteall else "bin/sublst/sl-domains.txt"
         script_path, "bin/altdns/words.txt"
     )
     altdnsCMD = "altdns -i {} -o {} -w {}".format(
@@ -407,9 +406,7 @@ def notified(sub, msg):
 
 def options():
     if fresh:
-        os.system("rm -r output")
-        newpath = r"output"
-        os.makedirs(newpath)
+        refreshResolvers(domain)
     if install or upgrade:
         upgradeFiles()
     else:
