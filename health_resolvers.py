@@ -13,7 +13,8 @@ with open(resolver_file, "r") as f:
 	resolvers = f.read().splitlines()
 	for ip in resolvers:
 		dig_noerror = len(subprocess.getoutput("dig {} @{} | grep NOERROR".format(check_domain ,ip)))
-		dig_nxdomain = len(subprocess.getoutput("dig {} @{} | grep NXDOMAIN".format("sssaberhackxxxnfkjaenrgtio.google.com" ,ip)))
+		test_nxdomain = "sssaberhackxxxnfkjaenrgtio.{}".format(check_domain)
+		dig_nxdomain = len(subprocess.getoutput("dig {} @{} | grep NXDOMAIN".format(test_nxdomain ,ip)))
 		if dig_noerror > 0 and dig_nxdomain > 0:
 			print(ip)
 			health_list.append(ip)
