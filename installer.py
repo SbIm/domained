@@ -10,7 +10,7 @@ def refreshResolvers(target):
     os.system("dnsvalidator -tL https://public-dns.info/nameservers.txt -threads 20 -o temp_resolvers.txt")
     os.system("git clone https://github.com/Abss0x7tbh/bass.git ./bin/bass")
     os.system("mv temp_resolvers.txt ./bin/bass/resolvers/public.txt")
-    os.system("python3 bin/bass/bass.py -d paypal.com -o temp_resolvers.txt")
+    os.system("python3 bin/bass/bass.py -d {} -o temp_resolvers.txt".format(target))
     os.system("python3 health_resolvers.py {}".format(target))
     os.system("mv temp_health_resolvers.txt resolvers.txt")
 
