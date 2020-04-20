@@ -14,7 +14,7 @@ with open(resolver_file, "r") as f:
 	for ip in resolvers:
 		dig_noerror = len(subprocess.getoutput("dig {} @{} | grep NOERROR".format(check_domain ,ip)))
 		dig_nxdomain = len(subprocess.getoutput("dig {} @{} | grep NXDOMAIN".format("sssaberhackxxxnfkjaenrgtio.google.com" ,ip)))
-		if dig_noerror > 0 && dig_nxdomain > 0:
+		if dig_noerror > 0 and dig_nxdomain > 0:
 			print(ip)
 			health_list.append(ip)
 			tempfile.writelines(ip + "\n")
