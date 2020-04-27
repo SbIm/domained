@@ -7,12 +7,22 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def refreshResolvers(target):
     os.chdir(SCRIPT_PATH)
-    os.system("dnsvalidator -tL https://public-dns.info/nameservers.txt -threads 20 -o temp_resolvers.txt")
-    os.system("git clone https://github.com/Abss0x7tbh/bass.git ./bin/bass")
+    os.system("git clone https://github.com/SbIm/bass.git ./bin/bass")
+    os.system("wget https://public-dns.info/nameserver/us.txt")
+    os.system("wget https://public-dns.info/nameserver/gb.txt")
+    os.system("wget https://public-dns.info/nameserver/de.txt")
+    os.system("wget https://public-dns.info/nameserver/jp.txt")
+    os.system("cat us.txt >> ./bin/bass/resolvers/public.txt")
+    os.system("cat gb.txt >> ./bin/bass/resolvers/public.txt")
+    os.system("cat de.txt >> ./bin/bass/resolvers/public.txt")
+    os.system("cat jp.txt >> ./bin/bass/resolvers/public.txt")
+    os.system("sort -u ./bin/bass/resolvers/public.txt -o ./bin/bass/resolvers/public.txt")
+    os.system("dnsvalidator -tL ./bin/bass/resolvers/public.txt -threads 20 -o ./bin/bass/resolvers/public.txt")
     os.system("mv temp_resolvers.txt ./bin/bass/resolvers/public.txt")
     os.system("python3 bin/bass/bass.py -d {} -o temp_resolvers.txt".format(target))
-    os.system("python3 health_resolvers.py {}".format(target))
-    os.system("mv temp_health_resolvers.txt resolvers.txt")
+    # os.system("python3 health_resolvers.py {}".format(target))
+    # os.system("mv temp_health_resolvers.txt resolvers.txt")
+    os.system("mv temp_resolvers.txt resolvers.txt")
 
 def upgradeFiles():
     """Upgrade all the required files

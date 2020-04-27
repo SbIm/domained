@@ -90,30 +90,6 @@ newpath = r"output"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-def massdns():
-    # global wildList
-    print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
-    # 似乎结果也包含了NXDOMAIN且有CNAME的类型
-    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -s 8000 -o S -w {}_massdns_noaltdns.txt".format(
-        "{}-domain-unique.txt".format(output_base),
-        os.path.join(script_path, "bin/massdns/bin/massdns"),
-        script_path,
-        output_base,
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    os.system(massdnsCMD)
-    # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
-    os.system("cat {}_massdns_noaltdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_wilds.txt".format(output_base, output_base))
-    stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
-        "{}_massdns_noaltdns_strip.txt".format(output_base),
-        "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
-        "{}_wilds.txt".format(output_base))
-    # writeFiles("massdns")    
-    os.system("rm " + "{}-domain-unique.txt".format(output_base))
-    os.system("rm " + "{}-all.txt".format(output_base))
-    print("\n\033[1;31mMasscan Complete\033[1;37m")
-    time.sleep(1)
-
 def altdns():
     # global altdnsWildList
     print("\n\n\033[1;31mRunning altdns \n\033[1;37m")
@@ -308,6 +284,30 @@ def subfinder(rerun=0):
         if check_gopath("subfinder", "github.com/subfinder/subfinder") and rerun != 1:
             subfinder(rerun=1)
 
+def massdns():
+    # global wildList
+    print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
+    # 似乎结果也包含了NXDOMAIN且有CNAME的类型
+    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -s 8000 -o S -w {}_massdns_noaltdns.txt".format(
+        "{}-domain-unique.txt".format(output_base),
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
+        script_path,
+        output_base,
+    )
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
+    os.system(massdnsCMD)
+    # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
+    os.system("cat {}_massdns_noaltdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_wilds.txt".format(output_base, output_base))
+    stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
+        "{}_massdns_noaltdns_strip.txt".format(output_base),
+        "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
+        "{}_wilds.txt".format(output_base))
+    # writeFiles("massdns")    
+    os.system("rm " + "{}-domain-unique.txt".format(output_base))
+    os.system("rm " + "{}-all.txt".format(output_base))
+    print("\n\033[1;31mMasscan Complete\033[1;37m")
+    time.sleep(1)
+
 def shufflebrute():
     print("\n\n\033[1;31mRunning shufflebrute \n\033[1;37m")
     starttime = datetime.datetime.now()
@@ -323,7 +323,7 @@ def shufflebrute():
     #     shufflebruteFileName,
     # )
 
-    shufflebruteCMD = ".bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
+    shufflebruteCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
         domain,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
