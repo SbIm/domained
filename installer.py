@@ -19,7 +19,7 @@ def refreshResolvers(target):
     # os.system("cat jp.txt >> ./bin/bass/resolvers/public.txt")
     # os.system("sort -u ./bin/bass/resolvers/public.txt -o ./bin/bass/resolvers/public.txt")
     # os.system("dnsvalidator -tL ./bin/bass/resolvers/public.txt -threads 20 -o temp_resolvers.txt")
-    os.system("dnsvalidator -tL https://public-dns.info/nameservers.txt -threads 100 -o temp_resolvers.txt")
+    os.system("dnsvalidator -tL https://public-dns.info/nameservers.txt -threads 30 -o temp_resolvers.txt")
     os.system("cat temp_resolvers.txt >> ./bin/bass/resolvers/public.txt")
     os.system("sort -u ./bin/bass/resolvers/public.txt -o ./bin/bass/resolvers/public.txt")
     os.system("rm temp_resolvers.txt")
