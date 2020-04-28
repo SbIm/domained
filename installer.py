@@ -7,6 +7,7 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def refreshResolvers(target):
     os.chdir(SCRIPT_PATH)
+    os.system("rm -dfr .bin/bass")
     os.system("git clone https://github.com/SbIm/bass.git ./bin/bass")
     # os.system("wget https://public-dns.info/nameserver/us.txt")
     # os.system("wget https://public-dns.info/nameserver/gb.txt")
