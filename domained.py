@@ -347,7 +347,7 @@ def massdnsLoop():
         num_line1 = num_line2
         os.system("mv {} {}".format(masstemp2, masstemp1))
 
-    os.system("cat {} | awk -F '. ' '{print $1}' > {}".format(masstemp1, masstemp))
+    os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, massdnsLoopFileName))
     os.system("cat {} >> {}".format(massdnsLoopFileName, subdomainAllFile))
     
