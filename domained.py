@@ -333,7 +333,7 @@ def massdnsLoop():
     starttime = endtime
 
     for i in range(2):
-        os.system("cat {} | awk -F '. ' '{print $1}' > {}".format(masstemp1, masstemp))
+        os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
         massdnsLoopCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 3000 -w {}".format(
             masstemp,
             os.path.join(script_path, "bin/massdns/bin/massdns"),
