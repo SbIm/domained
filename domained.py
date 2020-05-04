@@ -308,36 +308,53 @@ def massdns():
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
 
-def shufflebrute():
-    print("\n\n\033[1;31mRunning shufflebrute \n\033[1;37m")
+def massdnsLoop():
+    print("\n\n\033[1;31mRunning massdnsLoop \n\033[1;37m")
     starttime = datetime.datetime.now()
 
     word_file = os.path.join(
         script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
     )
-    shufflebruteFileName = "{}_shufflebrute.txt".format(output_base)
-    # shufflebruteCMD = "shuffledns -massdns {} -d {} -w {} -r resolvers.txt  -o {} -v".format(
-    #     os.path.join(script_path, "bin/massdns/bin/massdns"),
-    #     domain,
-    #     word_file,
-    #     shufflebruteFileName,
-    # )
-
-    shufflebruteCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
+    massdnsLoopFileName = "{}_massdnsLoop.txt".format(output_base)
+    masstemp = "{}_massdns_temp.txt".format(output_base)
+    masstemp1 = "{}_massdns_temp1.txt".format(output_base)
+    masstemp2 = "{}_massdns_temp2.txt".format(output_base)
+    massdnsLoopCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
         domain,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
-        shufflebruteFileName,
+        masstemp1,
     )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(shufflebruteCMD))
-    os.system(shufflebruteCMD)
-    os.system("cat {} >> {}".format(shufflebruteFileName, subdomainAllFile))
-
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsLoopCMD))
+    os.system(massdnsLoopCMD)
+    num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
-    os.system("echo Complete shufflebrute for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
-    d_count = int(subprocess.check_output('wc -l {}'.format(shufflebruteFileName), shell=True).split()[0])
-    os.system("echo shufflebrute find {} subs >> {}".format(d_count, staticsFile))
-    print("\n\033[1;shufflebrute Complete\033[1;37m")
+    os.system("echo Complete massdnsLoop_1 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
+    starttime = endtime
+
+    for i in range(2):
+        os.system("cat {} | awk -F '. ' '{print $1}' > {}".format(masstemp1, masstemp))
+        massdnsLoopCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 3000 -w {}".format(
+            masstemp,
+            os.path.join(script_path, "bin/massdns/bin/massdns"),
+            masstemp2,
+        )
+        os.system(massdnsLoopCMD)
+        num_line2 = sum(1 for line in open(masstemp2))
+        endtime = datetime.datetime.now()
+        os.system("echo Complete massdnsLoop_2 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
+        starttime = endtime
+        num_line1 = num_line2
+        os.system("mv {} {}".format(masstemp2, masstemp1))
+
+    os.system("cat {} | awk -F '. ' '{print $1}' > {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(masstemp, massdnsLoopFileName))
+    os.system("cat {} >> {}".format(massdnsLoopFileName, subdomainAllFile))
+    
+    
+    d_count = int(subprocess.check_output('wc -l {}'.format(massdnsLoopFileName), shell=True).split()[0])
+    os.system("echo massdnsLoop find {} subs >> {}".format(d_count, staticsFile))
+    print("\n\033[1;massdnsLoop Complete\033[1;37m")
     time.sleep(1)
 
 def notified(sub, msg):
@@ -415,7 +432,7 @@ def options():
             # subfinder()
             # amass_passive()
             # extractFDNS()
-            shufflebrute()
+            massdnsLoop()
             # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
             # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
 
