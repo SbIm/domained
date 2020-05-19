@@ -308,53 +308,55 @@ def massdns():
     print("\n\033[1;31mMasscan Complete\033[1;37m")
     time.sleep(1)
 
-def massdnsLoop():
-    print("\n\n\033[1;31mRunning massdnsLoop \n\033[1;37m")
+def massdnsBruteLoop():
+    print("\n\n\033[1;31mRunning massdnsBruteLoop \n\033[1;37m")
     starttime = datetime.datetime.now()
 
     word_file = os.path.join(
         script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt"
     )
-    massdnsLoopFileName = "{}_massdnsLoop.txt".format(output_base)
+    massdnsBruteLoopFileName = "{}_massdnsBruteLoop.txt".format(output_base)
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
-    massdnsLoopCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
+    massdnsBruteLoopCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
         domain,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsLoopCMD))
-    os.system(massdnsLoopCMD)
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsBruteLoopCMD))
+    os.system(massdnsBruteLoopCMD)
     num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
-    os.system("echo Complete massdnsLoop_1 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
+    os.system("echo Complete massdnsBruteLoop_1 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
     starttime = endtime
+
+    # find wildcard
 
     for i in range(2):
         os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
-        massdnsLoopCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 3000 -w {}".format(
+        massdnsBruteLoopCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 3000 -w {}".format(
             masstemp,
             os.path.join(script_path, "bin/massdns/bin/massdns"),
             masstemp2,
         )
-        os.system(massdnsLoopCMD)
+        os.system(massdnsBruteLoopCMD)
         num_line2 = sum(1 for line in open(masstemp2))
         endtime = datetime.datetime.now()
-        os.system("echo Complete massdnsLoop_2 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
+        os.system("echo Complete massdnsBruteLoop_2 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
         starttime = endtime
         num_line1 = num_line2
         os.system("mv {} {}".format(masstemp2, masstemp1))
 
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
-    os.system("sort -u {} -o {}".format(masstemp, massdnsLoopFileName))
-    os.system("cat {} >> {}".format(massdnsLoopFileName, subdomainAllFile))
+    os.system("sort -u {} -o {}".format(masstemp, massdnsBruteLoopFileName))
+    os.system("cat {} >> {}".format(massdnsBruteLoopFileName, subdomainAllFile))
     
     
-    d_count = int(subprocess.check_output('wc -l {}'.format(massdnsLoopFileName), shell=True).split()[0])
-    os.system("echo massdnsLoop find {} subs >> {}".format(d_count, staticsFile))
-    print("\n\033[1;massdnsLoop Complete\033[1;37m")
+    d_count = int(subprocess.check_output('wc -l {}'.format(massdnsBruteLoopFileName), shell=True).split()[0])
+    os.system("echo massdnsBruteLoop find {} subs >> {}".format(d_count, staticsFile))
+    print("\n\033[1;massdnsBruteLoop Complete\033[1;37m")
     time.sleep(1)
 
 def notified(sub, msg):
@@ -415,6 +417,25 @@ def notified(sub, msg):
         except:
             print("\nError - Email Notification Not Sent\n")
 
+def checkMainDomainWildCard(checkdomain):
+    # print("\nChecking wildcard\n")
+    rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
+    os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
+    os.system("dig {} @8.8.8.8 > tempCheck".format(checkdomain))
+    dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
+    dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
+    dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
+    dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
+    os.system("rm tempCheck c_tempCheck")
+    if dig_c_noerror > 0:
+        if dig_c_cname > 0:
+            return CNAMEWILD    # sib CNAME
+        elif dig_cname > 0:    
+            return NOWILD       # sib A, domain CNAME
+        else:
+            return AWILD        # sib A, domain A
+    else:
+        return NOWILD
 
 def options():
     if fresh:
@@ -432,7 +453,8 @@ def options():
             # subfinder()
             # amass_passive()
             # extractFDNS()
-            massdnsLoop()
+            if mainWildcard == NOWILD:
+                massdnsBruteLoop()
             # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
             # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
 
@@ -466,4 +488,5 @@ if __name__ == "__main__":
     notify = args.notify
     active = args.active
     useEyewitness = args.eyewitness
+    mainWildcard = checkMainDomainWildCard(domain)
     options()
