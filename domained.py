@@ -34,7 +34,6 @@ from shutil import which
 
 today = datetime.date.today()
 wildList = []
-cnameWildList = []
 NOWILD = 0
 AWILD = 1
 CNAMEWILD = 2
@@ -89,53 +88,6 @@ def get_args():
 newpath = r"output"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
-
-def altdns():
-    # global altdnsWildList
-    print("\n\n\033[1;31mRunning altdns \n\033[1;37m")
-    word_file = os.path.join(
-        script_path, "bin/altdns/words.txt"
-    )
-    altdnsCMD = "altdns -i {} -o {} -w {}".format(
-        "{}_massdns_noaltdns_strip.txt".format(output_base),
-        "{}-altdns-data".format(output_base),
-        word_file,
-    )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(altdnsCMD))
-    os.system(altdnsCMD)
-    print("\n\033[1;31mAltdns Complete\033[1;37m")
-    time.sleep(1)
-    with open("{}-altdns-data".format(output_base), "r") as f:
-        altdnsData = f.read().splitlines()
-    with open("altdnsTemp", "a") as altf:
-        for altdnsLine in altdnsData:
-            altf.writelines(altdnsLine + "\n")
-            altdnsLine = altdnsLine.split(".", 1)[1]
-            altdnsLine = "xxfeedcafejfoiaeowjnbnmcoampqoqp." + altdnsLine
-            altf.writelines(altdnsLine + "\n")
-    os.system("rm {}-altdns-data".format(output_base))
-    os.system("sort -u altdnsTemp -o {}-altdns-data".format(output_base))
-    os.system("rm altdnsTemp")
-    print("\n\n\033[1;31mRunning massDNS for altdns \n\033[1;37m")
-    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -s 8000 -o S -w {}_massdns_altdns.txt".format(
-        "{}-altdns-data".format(output_base),
-        os.path.join(script_path, "bin/massdns/bin/massdns"),
-        script_path,
-        output_base,
-    )    
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    os.system(massdnsCMD)
-    os.system("rm {}".format("{}-altdns-data".format(output_base)))
-    os.system("cat {}_massdns_altdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_altdns_wilds.txt".format(output_base, output_base))
-    os.system("cat {}_altdns_wilds.txt {}_wilds.txt > wildTemp".format(output_base, output_base))
-    os.system("rm {}_altdns_wilds.txt".format(output_base))
-    os.system("mv wildTemp {}_altdns_wilds.txt".format(output_base))
-    stripMassdnsFile("{}_massdns_altdns.txt".format(output_base), 
-        "{}_massdns_altdns_strip.txt".format(output_base),
-        "{}_massdns_altdns_cname_strip.txt".format(output_base),
-        "{}_altdns_wilds.txt".format(output_base))
-    print("\n\033[1;31mMasscan for altdns Complete\033[1;37m")
-    time.sleep(1)
 
 def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
     global wildList
@@ -213,7 +165,6 @@ def check_gopath(cmd, install_repo):
             os.system("go get -u -v {}".format(install_repo))
             return True
 
-
 def amass_passive(rerun=0):
     if which("amass"):
         print("\n\n\033[1;31mRunning Amass \n\033[1;37m")
@@ -284,31 +235,46 @@ def subfinder(rerun=0):
         if check_gopath("subfinder", "github.com/subfinder/subfinder") and rerun != 1:
             subfinder(rerun=1)
 
-def massdns():
-    # global wildList
-    print("\n\n\033[1;31mRunning massdns \n\033[1;37m")
-    # 似乎结果也包含了NXDOMAIN且有CNAME的类型
-    massdnsCMD = "cat {} | {} -r {}/bin/massdns/lists/resolvers.txt -t A -s 8000 -o S -w {}_massdns_noaltdns.txt".format(
-        "{}-domain-unique.txt".format(output_base),
+def dnsgen():
+    # global altdnsWildList
+    print("\n\n\033[1;31mRunning dnsgen \n\033[1;37m")
+    starttime = datetime.datetime.now()
+
+    dnsgen_massdns_file = "{}_dnsgen_massdns.txt".format(output_base)
+    masstemp = "{}_massdns_temp.txt".format(output_base)
+    masstemp1 = "{}_massdns_temp1.txt".format(output_base)
+    masstemp2 = "{}_massdns_temp2.txt".format(output_base)
+    dnsgenCMD = "cat {} | dnsgen - | {} -r resolvers.txt -t A -o S -w {}".format(
+        noWildcardsFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
-        script_path,
-        output_base,
+        masstemp1,
     )
-    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(massdnsCMD))
-    os.system(massdnsCMD)
-    # generateWildList("{}_massdns_noaltdns.txt".format(output_base), wildList)
-    os.system("cat {}_massdns_noaltdns.txt | grep xxfeedcafejfoiaeowjnbnmcoampqoqp. > {}_wilds.txt".format(output_base, output_base))
-    stripMassdnsFile("{}_massdns_noaltdns.txt".format(output_base), 
-        "{}_massdns_noaltdns_strip.txt".format(output_base),
-        "{}_massdns_noaltdns_cname_strip.txt".format(output_base),
-        "{}_wilds.txt".format(output_base))
-    # writeFiles("massdns")    
-    os.system("rm " + "{}-domain-unique.txt".format(output_base))
-    os.system("rm " + "{}-all.txt".format(output_base))
-    print("\n\033[1;31mMasscan Complete\033[1;37m")
+    print("\n\033[1;31mRunning Command: \033[1;37m{}".format(dnsgenCMD))
+    os.system(dnsgenCMD)
+    for i in range(2):
+        os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
+        massdnsBruteLoopCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 3000 -w {}".format(
+            masstemp,
+            os.path.join(script_path, "bin/massdns/bin/massdns"),
+            masstemp2,
+        )
+        os.system(massdnsBruteLoopCMD)
+        os.system("mv {} {}".format(masstemp2, masstemp1))
+
+    os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(masstemp, dnsgen_massdns_file))
+    os.system("cat {} >> {}".format(dnsgen_massdns_file, subdomainAllFile))
+    os.system("rm {} {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
+
+    print("\n\033[1;dnsgen Complete\033[1;37m")
+    endtime = datetime.datetime.now()
+    d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
+    os.system("echo Complete dnsgen for {} seconds with {} subs in all >> {}".format((endtime - starttime).seconds, d_count, staticsFile))
     time.sleep(1)
 
-def massdnsBruteLoop():
+def massdnsBruteLoop(massdomain):
+    # 似乎结果也包含了NXDOMAIN且有CNAME的类型
     print("\n\n\033[1;31mRunning massdnsBruteLoop \n\033[1;37m")
     starttime = datetime.datetime.now()
 
@@ -321,7 +287,7 @@ def massdnsBruteLoop():
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
     massdnsBruteLoopCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
-        domain,
+        massdomain,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
@@ -331,8 +297,6 @@ def massdnsBruteLoop():
     endtime = datetime.datetime.now()
     os.system("echo Complete massdnsBruteLoop_1 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
     starttime = endtime
-
-    # find wildcard
 
     for i in range(2):
         os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
@@ -352,12 +316,57 @@ def massdnsBruteLoop():
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, massdnsBruteLoopFileName))
     os.system("cat {} >> {}".format(massdnsBruteLoopFileName, subdomainAllFile))
+    os.system("rm {} {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
     
-    
-    d_count = int(subprocess.check_output('wc -l {}'.format(massdnsBruteLoopFileName), shell=True).split()[0])
-    os.system("echo massdnsBruteLoop find {} subs >> {}".format(d_count, staticsFile))
+    d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
+    os.system("echo Complete massdnsBruteLoop with {} subs in all >> {}".format(d_count, staticsFile))
     print("\n\033[1;massdnsBruteLoop Complete\033[1;37m")
+
     time.sleep(1)
+
+def massdnsPassive():
+    masstemp = "{}_massdns_temp.txt".format(output_base)
+    masstemp1 = "{}_massdns_temp1.txt".format(output_base)
+    massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 500 -w {}".format(
+        subdomainAllFile,
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
+        masstemp1,
+    )
+    os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(masstemp, masstemp))
+    os.system("mv {} {}".format(masstemp, subdomainAllFile))
+    os.system("rm {}".format(masstemp1))
+    d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
+    os.system("echo Complete massdnsPassive with {} subs in all >> {}".format(d_count, staticsFile))
+
+def stripWildCards():
+    masstemp = "{}_massdns_temp.txt".format(output_base)
+    masstemp1 = "{}_massdns_temp1.txt".format(output_base)
+    os.system("cp {} {}tmp".format(subdomainAllFile, subdomainAllFile))
+    os.system("awk '{{print \"xxfeedcafejfoiaeowjnbnmcoampqoqp.\"$0}}' {}tmp > {}tmpp".format(subdomainAllFile, subdomainAllFile))
+    os.system("rm {}tmp".format(subdomainAllFile))
+    stripmassdnsCMD = "cat {}tmpp | {} -r popular_resolvers.txt -t A -o S -s 500 -w {}".format(
+        subdomainAllFile,
+        os.path.join(script_path, "bin/massdns/bin/massdns"),
+        masstemp1,
+    )
+    os.system("rm {}tmpp".format(subdomainAllFile))
+    os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
+    os.system("sort -u {} -o {}".format(masstemp, masstemp))
+    os.system("mv {} {}".format(masstemp, wildcardsFile))    
+    with open(wildcardsFile, "r") as f:
+        wildList = f.readlines()
+    os.system("rm {}".format(masstemp1))
+    os.system("rm {}tmpp".format(subdomainAllFile))
+    # create none wild subs file
+    nwf = open(noWildcardsFile, "w+")
+    with open(subdomainAllFile, "r") as f:
+        subsList = f.readlines()
+        for sub in wildList:
+            if sub not in wildList:
+                nwf.writelines(sub + "\n")
+    nwf.close()
 
 def notified(sub, msg):
     notifySub = sub
@@ -417,7 +426,7 @@ def notified(sub, msg):
         except:
             print("\nError - Email Notification Not Sent\n")
 
-def checkMainDomainWildCard(checkdomain):
+def checkDomainWildCard(checkdomain):
     # print("\nChecking wildcard\n")
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
     os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
@@ -450,11 +459,14 @@ def options():
             os.system("rm -dfr output/{}".format(domain))
             os.system("mkdir output/{}".format(domain))
             notified("domained Script Started", "domained Script Started for {}".format(domain))
-            # subfinder()
-            # amass_passive()
-            # extractFDNS()
+            subfinder()
+            amass_passive()
+            extractFDNS()
+            massdnsPassive()
             if mainWildcard == NOWILD:
-                massdnsBruteLoop()
+                massdnsBruteLoop(domain)
+                stripWildCards()
+                dnsgen()
             # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
             # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
 
@@ -476,6 +488,8 @@ if __name__ == "__main__":
     output_base = "{}/output/{}/{}".format(script_path, domain, domain)
     subdomainAllFile = "{}-all.txt".format(output_base)
     staticsFile = "{}-reconstatics.txt".format(output_base)
+    noWildcardsFile = "{}_noWildcards.txt".format(output_base)
+    wildcardsFile = "{}_wildcards.txt".format(output_base)
     secure = args.secure
     bruteforce = args.bruteforce
     upgrade = args.upgrade
@@ -488,5 +502,5 @@ if __name__ == "__main__":
     notify = args.notify
     active = args.active
     useEyewitness = args.eyewitness
-    mainWildcard = checkMainDomainWildCard(domain)
+    mainWildcard = checkDomainWildCard(domain)
     options()
