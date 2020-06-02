@@ -490,6 +490,7 @@ if __name__ == "__main__":
     subdomainAllFile = "{}_all.txt".format(output_base)
     noWildcardsFile = "{}_noWildcards.txt".format(output_base)
     wildcardsFile = "{}_wildcards.txt".format(output_base)
+    staticsFile = "{}_reconStatics.txt".format(output_base)
     secure = args.secure
     bruteforce = args.bruteforce
     upgrade = args.upgrade
