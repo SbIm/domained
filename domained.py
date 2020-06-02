@@ -171,7 +171,7 @@ def amass_passive(rerun=0):
         starttime = datetime.datetime.now()
 
         amassFileName = "{}_amass.txt".format(output_base)
-        amassCmd = "amass enum -passive -d {} -o {}".format(domain, amassFileName)
+        amassCmd = "amass enum --passive -d {} -o {}".format(domain, amassFileName)
         print("\n\033[1;31mRunning Command: \033[1;37m{}".format(amassCmd))
         os.system(amassCmd)
         os.system("cat {} >> {}".format(amassFileName, subdomainAllFile))
@@ -333,8 +333,9 @@ def massdnsPassive():
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
+    os.system("cp {} {}_bak".format(masstemp1, masstemp1))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
-    os.system("sort -u {} -o {}".format(masstemp, masstemp))
+    os.system("sort -u {} -o {}".format(masstemp, masstemp))    
     os.system("mv {} {}".format(masstemp, subdomainAllFile))
     os.system("rm {}".format(masstemp1))
     d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
