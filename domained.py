@@ -328,12 +328,13 @@ def massdnsBruteLoop(massdomain):
 def massdnsPassive():
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
-    os.system("cp {} {}_bak".format(subdomainAllFile, subdomainAllFile))
+    os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))   
     massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 500 -w {}".format(
         subdomainAllFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
+    os.system(massdnsPassiveCMD)
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))    
     os.system("mv {} {}".format(masstemp, subdomainAllFile))
