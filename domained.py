@@ -295,7 +295,7 @@ def massdnsBruteLoop(massdomain):
     os.system(massdnsBruteLoopCMD)
     num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
-    os.system("echo Complete massdnsBruteLoop_1 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
+    os.system("echo Run massdnsBruteLoop_1 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
     starttime = endtime
 
     for i in range(2):
@@ -308,7 +308,7 @@ def massdnsBruteLoop(massdomain):
         os.system(massdnsBruteLoopCMD)
         num_line2 = sum(1 for line in open(masstemp2))
         endtime = datetime.datetime.now()
-        os.system("echo Complete massdnsBruteLoop_2 for {} seconds with {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
+        os.system("echo Run massdnsBruteLoop_2 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
         starttime = endtime
         num_line1 = num_line2
         os.system("mv {} {}".format(masstemp2, masstemp1))
@@ -322,7 +322,6 @@ def massdnsBruteLoop(massdomain):
     d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
     os.system("echo Complete massdnsBruteLoop with {} subs in all >> {}".format(d_count, staticsFile))
     print("\n\033[1;massdnsBruteLoop Complete\033[1;37m")
-
     time.sleep(1)
 
 def massdnsPassive():
@@ -353,6 +352,7 @@ def stripWildCards():
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
+    os.system(stripmassdnsCMD)
     os.system("rm {}tmpp".format(subdomainAllFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
