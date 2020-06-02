@@ -34,12 +34,10 @@ from shutil import which
 
 today = datetime.date.today()
 wildList = []
+altdnsWildList = []
 NOWILD = 0
 AWILD = 1
 CNAMEWILD = 2
-
-
-altdnsWildList = []
 
 def get_args():
     parser = argparse.ArgumentParser(description="domained")
@@ -365,7 +363,7 @@ def stripWildCards():
     nwf = open(noWildcardsFile, "w+")
     with open(subdomainAllFile, "r") as f:
         subsList = f.readlines()
-        for sub in wildList:
+        for sub in subsList:
             if sub not in wildList:
                 nwf.writelines(sub + "\n")
     nwf.close()
