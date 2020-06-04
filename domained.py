@@ -410,7 +410,7 @@ def stripWildCards():
             if wildSub.startswith("*."):
                 wildSub = wildSub[2:]
             tmpWildSub = wildSub
-            while wildSub.count(".") > 2 && checkDomainWildCard(wildSub) != NOWILD:
+            while wildSub.count(".") > 2 and checkDomainWildCard(wildSub) != NOWILD:
                 tmpWildSub = wildSub
                 wildSub = wildSub.split('.', 1)[1]
 
@@ -419,7 +419,7 @@ def stripWildCards():
     with open(wildcardsFile, 'w') as f:
         for item in wildList:
             f.write("%s\n" % item)
-            
+
     os.system("rm {} {}".format(masstemp, masstemp1))
     os.system("rm {}tmpp".format(subdomainAllFile))
     # create none wild subs file
