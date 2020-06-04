@@ -36,8 +36,10 @@ today = datetime.date.today()
 wildList = []
 altdnsWildList = []
 NOWILD = 0
-AWILD = 1
-CNAMEWILD = 2
+ISWILD = 1
+# NOWILD = 0
+# AWILD = 1
+# CNAMEWILD = 2
 
 def get_args():
     parser = argparse.ArgumentParser(description="domained")
@@ -393,8 +395,31 @@ def stripWildCards():
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
     os.system("cat {} | cut -d '.' -f 2- > {}".format(masstemp, wildcardsFile))  # 会删掉wildcardsFile中原有内容
        
+    stripWildList = []
     with open(wildcardsFile, "r") as f:
         wildList = f.readlines()
+        for wildSub in wildList:
+            inStrip = False
+            for stripWildSub in stripWildList:
+                if stripWildSub in wildSub:
+                    inStrip = True
+                    break
+            if inStrip:
+                continue
+
+            if wildSub.startswith("*."):
+                wildSub = wildSub[2:]
+            tmpWildSub = wildSub
+            while wildSub.count(".") > 2 && checkDomainWildCard(wildSub) != NOWILD:
+                tmpWildSub = wildSub
+                wildSub = wildSub.split('.', 1)[1]
+
+            stripWildList.append(tmpWildSub)
+    wildList = stripWildList
+    with open(wildcardsFile, 'w') as f:
+        for item in wildList:
+            f.write("%s\n" % item)
+            
     os.system("rm {} {}".format(masstemp, masstemp1))
     os.system("rm {}tmpp".format(subdomainAllFile))
     # create none wild subs file
@@ -404,8 +429,6 @@ def stripWildCards():
         for sub in subsList:
             wildCheck = False
             for wildSub in wildList:
-                if wildSub.startswith("*."):
-                    wildSub = wildSub[2:]
                 if wildSub in sub:
                     wildCheck = True
                     break
@@ -472,24 +495,30 @@ def notified(sub, msg):
             print("\nError - Email Notification Not Sent\n")
 
 def checkDomainWildCard(checkdomain):
-    # print("\nChecking wildcard\n")
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
-    os.system("dig {} @8.8.8.8 > tempCheck".format(checkdomain))
-    dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
-    dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
-    dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
-    dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
-    os.system("rm tempCheck c_tempCheck")
-    if dig_c_noerror > 0:
-        if dig_c_cname > 0:
-            return CNAMEWILD    # sib CNAME
-        elif dig_cname > 0:    
-            return NOWILD       # sib A, domain CNAME
-        else:
-            return AWILD        # sib A, domain A
+    d_count = int(subprocess.check_output('dig @8.8.8.8 A,CNAME {} +short | wc -l'.format(rand_domain), shell=True).split()[0])
+    if d_count >0:
+        return ISWILD
     else:
         return NOWILD
+    # print("\nChecking wildcard\n")
+    # rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
+    # os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
+    # os.system("dig {} @8.8.8.8 > tempCheck".format(checkdomain))
+    # dig_c_noerror = len(subprocess.getoutput("cat c_tempCheck | grep NOERROR"))
+    # dig_c_cname = len(subprocess.getoutput("cat c_tempCheck | grep CNAME"))
+    # dig_noerror = len(subprocess.getoutput("cat tempCheck | grep NOERROR"))
+    # dig_cname = len(subprocess.getoutput("cat tempCheck | grep CNAME"))
+    # os.system("rm tempCheck c_tempCheck")
+    # if dig_c_noerror > 0:
+    #     if dig_c_cname > 0:
+    #         return CNAMEWILD    # sib CNAME
+    #     elif dig_cname > 0:    
+    #         return NOWILD       # sib A, domain CNAME
+    #     else:
+    #         return AWILD        # sib A, domain A
+    # else:
+    #     return NOWILD
 
 def options():
     if fresh:
