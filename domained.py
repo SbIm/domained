@@ -496,7 +496,7 @@ def notified(sub, msg):
 
 def checkDomainWildCard(checkdomain):
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    d_count = int(subprocess.check_output('dig @8.8.8.8 A,CNAME {} +short | wc -l'.format(rand_domain), shell=True).split()[0])
+    d_count = int(subprocess.check_output("dig @8.8.8.8 A,CNAME {} +short | wc -l".format(rand_domain), shell=True).split()[0])
     if d_count >0:
         return ISWILD
     else:
