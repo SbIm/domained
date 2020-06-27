@@ -484,6 +484,13 @@ def checkDomainWildCard(checkdomain):
     #         return AWILD        # sib A, domain A
     # else:
     #     return NOWILD
+def eyewitness(filename):
+    os.system("rm {}/geckodriver.log".format(script_path))
+    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
+        filename,
+        output_base,
+    )
+    os.system(EWHTTPScriptIPS)
 
 def options():
     if fresh:
