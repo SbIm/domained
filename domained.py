@@ -510,8 +510,8 @@ def options():
 
         # generateUrl()
         # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-        os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}_probeurls.txt".format(subdomainAllFile, subdomainAllFile))
-        eyewitness(subdomainAllFile)
+        os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}".format(subdomainAllFile, urlProbesFile))
+        eyewitness(urlProbesFile)
         notified("domained Script Finished", "domained Script Finished for {}".format(domain))
     else:
         print("\nPlease provide a domain. Ex. -d example.com")
@@ -525,6 +525,7 @@ if __name__ == "__main__":
     script_path = os.path.dirname(os.path.realpath(__file__))
     output_base = "{}/output/{}/".format(script_path, domain)
     subdomainAllFile = "{}_all.txt".format(output_base)
+    urlProbesFile = "{}_all_urlProbes.txt".format(output_base)
     subsOfSubsFile = "{}_sos.txt".format(output_base)
     noWildcardsFile = "{}_noWildcards.txt".format(output_base)
     wildcardsFile = "{}_wildcards.txt".format(output_base)
