@@ -80,6 +80,8 @@ def upgradeFiles():
     # bin/SecLists/Discovery/DNS/subdomains-top1million-20000.txt, 20k
     # bin/SecLists/Discovery/DNS/subdomains-top1million-5000.txt, 5k
     os.system("git clone https://github.com/danielmiessler/SecLists.git ./bin/SecLists")
+    os.system("cat bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt bin/SecLists/Discovery/DNS/dns-Jhaddix.txt > bin/SecLists/Discovery/DNS/all-temp.txt")
+    os.system("sort -u bin/SecLists/Discovery/DNS/all-temp.txt -o bin/SecLists/Discovery/DNS/all-temp.txt")
 
     print("\n\033[1;31mAll tools installed \033[1;37m")
     print("Changing back to old working directory: {}".format(old_wd))

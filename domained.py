@@ -34,7 +34,6 @@ from shutil import which
 
 today = datetime.date.today()
 wildList = []
-altdnsWildList = []
 NOWILD = 0
 ISWILD = 1
 # NOWILD = 0
@@ -185,34 +184,6 @@ def amass_passive(rerun=0):
     else:
         print("\n\n\033[1;3mAmass is not currently in your $PATH \n\033[1;37m")
 
-
-def extractFDNS():
-    print("\n\n\033[1;31mRunning extractFDNS \n\033[1;37m")
-    starttime = datetime.datetime.now()
-
-    fdns_domain_file = "{}/bin/ExtractSubdomainFromFDNS/{}.csv".format(script_path ,domain)
-    if os.path.exists(fdns_domain_file):
-        exFDNSf = open(fdns_domain_file, "r")
-        exFDNSLines = exFDNSf.read().splitlines()
-        exFDNSf.close()
-        exFDNS_outputFileName = "{}_exfdns.txt".format(output_base)
-        with open(exFDNS_outputFileName, "a") as f:
-            for line in exFDNSLines:
-                line_strs = line.split(',')
-                if len(line_strs) > 2:
-                    if line_strs[2] == '\"a\"' or line_strs[2] == '\"cname\"':
-                        line_subdomain = line_strs[1][1:-1]  
-                        f.writelines(line_subdomain + "\n")
-        os.system("cat {} >> {}".format(exFDNS_outputFileName, subdomainAllFile))
-
-        endtime = datetime.datetime.now()
-        os.system("echo Complete extractFDNS for {} seconds >> {}".format((endtime - starttime).seconds, staticsFile))
-        d_count = int(subprocess.check_output('wc -l {}'.format(exFDNS_outputFileName), shell=True).split()[0])
-        os.system("echo extractFDNS find {} subs >> {}".format(d_count, staticsFile))
-        print("\n\033[1;31mextractFDNS Complete\033[1;37m")
-    else:
-        print("\nNo csv data for {}!\n".format(domain))
-
 def subfinder(rerun=0):
     if which("subfinder"):
         print("\n\n\033[1;31mRunning Subfinder \n\033[1;37m")
@@ -236,7 +207,6 @@ def subfinder(rerun=0):
             subfinder(rerun=1)
 
 def dnsgen():
-    # global altdnsWildList
     print("\n\n\033[1;31mRunning dnsgen \n\033[1;37m")
     starttime = datetime.datetime.now()
 
@@ -315,7 +285,7 @@ def massdnsBruteLoop(massdomain, findSoS):
         word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt")
         output_file = subsOfSubsFile
     else:
-        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/dns-Jhaddix.txt")
+        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
         output_file = subdomainAllFile
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
@@ -330,7 +300,7 @@ def massdnsBruteLoop(massdomain, findSoS):
     num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
     if not findSoS:
-        os.system("echo Run massdnsBruteLoop_1 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
+        os.system("echo Run massdnsBrute_stage_1 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line1, staticsFile))
     starttime = endtime
 
     for i in range(2):
@@ -344,7 +314,7 @@ def massdnsBruteLoop(massdomain, findSoS):
         num_line2 = sum(1 for line in open(masstemp2))
         endtime = datetime.datetime.now()
         if not findSoS:
-            os.system("echo Run massdnsBruteLoop_2 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
+            os.system("echo Run massdnsBrute_stage_2 for {} seconds got {} results >> {}".format((endtime - starttime).seconds, num_line2, staticsFile))
         starttime = endtime
         num_line1 = num_line2
         os.system("mv {} {}".format(masstemp2, masstemp1))
@@ -355,9 +325,7 @@ def massdnsBruteLoop(massdomain, findSoS):
     os.system("rm {} {}".format(masstemp1, masstemp))
     if not findSoS:
         os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
-    
-    d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
-    if not findSoS:
+        d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
         os.system("echo Complete massdnsBruteLoop with {} subs in all >> {}".format(d_count, staticsFile))
     time.sleep(1)
 
@@ -365,7 +333,7 @@ def massdnsPassive():
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))   
-    massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 500 -w {}".format(
+    massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 1000 -w {}".format(
         subdomainAllFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
@@ -406,22 +374,19 @@ def stripWildCards():
                     break
             if inStrip:
                 continue
-
             if wildSub.startswith("*."):
                 wildSub = wildSub[2:]
             tmpWildSub = wildSub
             while wildSub.count(".") > 2 and checkDomainWildCard(wildSub) != NOWILD:
                 tmpWildSub = wildSub
                 wildSub = wildSub.split('.', 1)[1]
-
             stripWildList.append(tmpWildSub)
     wildList = stripWildList
     with open(wildcardsFile, 'w') as f:
         for item in wildList:
-            f.write("%s\n" % item)
+            f.writelines(item)
 
     os.system("rm {} {}".format(masstemp, masstemp1))
-    os.system("rm {}tmpp".format(subdomainAllFile))
     # create none wild subs file
     nwf = open(noWildcardsFile, "w+")
     with open(subdomainAllFile, "r") as f:
@@ -527,31 +492,29 @@ def options():
     if install or upgrade:
         upgradeFiles()
         return
+    if domain:
+        os.system("rm -dfr output/{}".format(domain))
+        os.system("mkdir output/{}".format(domain))
+        notified("domained Script Started", "domained Script Started for {}".format(domain))
+        subfinder()
+        amass_passive()
+        massdnsPassive()
+        if mainWildcard == NOWILD:
+            massdnsBruteLoop(domain, findSoS=False)
+            stripWildCards()
+            dnsgen()
+        # findSubsOfSubs()
+        # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
+        # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
+
+
+        # generateUrl()
+        # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
+        os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}_probeurls.txt".format(subdomainAllFile, subdomainAllFile))
+        eyewitness(subdomainAllFile)
+        notified("domained Script Finished", "domained Script Finished for {}".format(domain))
     else:
-        if domain:
-            # clean old results
-            os.system("rm -dfr output/{}".format(domain))
-            os.system("mkdir output/{}".format(domain))
-            notified("domained Script Started", "domained Script Started for {}".format(domain))
-            subfinder()
-            amass_passive()
-            extractFDNS()
-            massdnsPassive()
-            if mainWildcard == NOWILD:
-                massdnsBruteLoop(domain, findSoS=False)
-                stripWildCards()
-                dnsgen()
-                # findSubsOfSubs()
-            # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
-            # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
-
-
-            # generateUrl()
-            # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
-            # eyewitness(subdomainUrlUniqueFile)
-            notified("domained Script Finished", "domained Script Finished for {}".format(domain))
-        else:
-            print("\nPlease provide a domain. Ex. -d example.com")
+        print("\nPlease provide a domain. Ex. -d example.com")
     print("\n\033[1;34mAll your subdomain are belong to us\033[1;37m")
 
 
