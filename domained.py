@@ -486,7 +486,7 @@ def checkDomainWildCard(checkdomain):
     #     return NOWILD
 def eyewitness(filename):
     os.system("rm {}/geckodriver.log".format(script_path))
-    EWHTTPScriptIPS = "{}/bin/EyeWitness/EyeWitness.py -f {} --no-prompt --web -d {}_Eyewitness".format(script_path, 
+    EWHTTPScriptIPS = "{}/bin/EyeWitness/Python/EyeWitness.py -f {} --no-prompt --web --threads 50 -d {}_Eyewitness".format(script_path, 
         filename,
         output_base,
     )
