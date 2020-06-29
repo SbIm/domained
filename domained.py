@@ -463,8 +463,10 @@ def checkDomainWildCard(checkdomain):
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
     print("checking.{}".format(rand_domain))
     # shell_res = subprocess.check_output("dig +short @8.8.8.8 A,CNAME {} | wc -l".format(rand_domain), shell=True).split()[0]
-    shell_res = os.popen("dig +short @8.8.8.8 A,CNAME {} | wc -l".format(rand_domain)).read().split()[0]
-    # shell_res = subprocess.getoutput("dig +short @8.8.8.8 A,CNAME {} | wc -l".format(rand_domain)).split()[0]
+    # shell_res = os.popen("dig +short @8.8.8.8 A,CNAME {} | wc -l".format(rand_domain)).read().split()[0]
+    shell_res = subprocess.getoutput("dig +short @8.8.8.8 A,CNAME {}".format(rand_domain))
+    print(shell_res)
+    shell_res = subprocess.getoutput("echo {} | wc -l".format(shell_res)).split()[0]
     print(shell_res)
     d_count = int(shell_res)
     if d_count >0:
