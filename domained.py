@@ -462,7 +462,7 @@ def notified(sub, msg):
 def checkDomainWildCard(checkdomain):
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
     print("checking.{}".format(rand_domain))
-    shell_res = subprocess.check_output("dig @8.8.8.8 A,CNAME {} +short | wc -l".format(rand_domain), shell=True).split()[0]
+    shell_res = subprocess.check_output("dig +short @8.8.8.8 A,CNAME {} | wc -l".format(rand_domain), shell=True).split()[0]
     print(shell_res)
     d_count = int(shell_res)
     if d_count >0:
