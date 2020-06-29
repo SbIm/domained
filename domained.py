@@ -461,14 +461,12 @@ def notified(sub, msg):
 
 def checkDomainWildCard(checkdomain):
     rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
-    try:
-        d_count = int(subprocess.check_output("dig @8.8.8.8 A,CNAME {} +short | wc -l".format(rand_domain), shell=True).split()[0])
-        if d_count >0:
-            return ISWILD
-        else:
-            return NOWILD
-    except:
-        print("check wildcard wrong for {}".format(rand_domain))
+    print("checking.{}".format(rand_domain))
+    d_count = int(subprocess.check_output("dig @8.8.8.8 A,CNAME {} +short | wc -l".format(rand_domain), shell=True).split()[0])
+    if d_count >0:
+        return ISWILD
+    else:
+        return NOWILD
     # print("\nChecking wildcard\n")
     # rand_domain = "xxfeedcafejfoiaeowjnbnmcoampqoqp.{}".format(checkdomain)
     # os.system("dig {} @8.8.8.8 > c_tempCheck".format(rand_domain))
