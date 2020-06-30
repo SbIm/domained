@@ -507,8 +507,6 @@ def options():
     if domain:
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
-        stripWildCards()
-        return
         notified("domained Script Started", "domained Script Started for {}".format(domain))
         subfinder()
         amass_passive()
@@ -516,6 +514,7 @@ def options():
         if mainWildcard == NOWILD:
             massdnsBruteLoop(domain, findSoS=False)
             stripWildCards()
+            return
             dnsgen()
         # findSubsOfSubs()
         # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
