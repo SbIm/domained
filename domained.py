@@ -377,7 +377,7 @@ def stripWildCards():
             if wildSub.startswith("*."):
                 wildSub = wildSub[2:]
             tmpWildSub = wildSub
-            while wildSub.count(".") > 2 and checkDomainWildCard(wildSub) != NOWILD:
+            while wildSub.count(".") > 1 and checkDomainWildCard(wildSub) != NOWILD:
                 print(wildSub)
                 tmpWildSub = wildSub
                 wildSub = wildSub.split('.', 1)[1]
