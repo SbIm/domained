@@ -234,8 +234,9 @@ def dnsgen():
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
     os.system("grep -v -f {} {} > {}".format(subdomainAllFile, masstemp, dnsgen_extra_massdns_file))
+    # need strip it again
     os.system("cat {} >> {}".format(dnsgen_extra_massdns_file, subdomainAllFile))
-    # os.system("rm {} {}".format(masstemp1, masstemp))
+    os.system("rm {} {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
 
     endtime = datetime.datetime.now()
@@ -402,6 +403,8 @@ def stripWildCards():
             if not wildCheck:
                 nwf.writelines(sub)
     nwf.close()
+    os.system("rm {}".format(subdomainAllFile))
+    os.system("cat {} {} > {}".format(noWildcardsFile, wildcardsFile, subdomainAllFile))
 
 def notified(sub, msg):
     notifySub = sub
@@ -506,8 +509,8 @@ def options():
         upgradeFiles()
         return
     if domain:
-        dnsgen()
-        return
+        # dnsgen()
+        # return
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
         notified("domained Script Started", "domained Script Started for {}".format(domain))
