@@ -233,7 +233,7 @@ def dnsgen():
 
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
-    os.system("awk 'FNR==NR{a[NR]=$0;next;} $0!=a[FNR]' {} {} > {}".format(masstemp, subdomainAllFile, dnsgen_extra_massdns_file))
+    os.system("grep -v -f {} {} > {}".format(subdomainAllFile, masstemp, dnsgen_extra_massdns_file))
     os.system("cat {} >> {}".format(dnsgen_extra_massdns_file, subdomainAllFile))
     os.system("rm {} {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
