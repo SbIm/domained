@@ -378,6 +378,7 @@ def stripWildCards():
                 wildSub = wildSub[2:]
             tmpWildSub = wildSub
             while wildSub.count(".") > 2 and checkDomainWildCard(wildSub) != NOWILD:
+                print(wildSub)
                 tmpWildSub = wildSub
                 wildSub = wildSub.split('.', 1)[1]
             stripWildList.append(tmpWildSub)
@@ -506,6 +507,8 @@ def options():
     if domain:
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
+        stripWildCards()
+        return
         notified("domained Script Started", "domained Script Started for {}".format(domain))
         subfinder()
         amass_passive()
