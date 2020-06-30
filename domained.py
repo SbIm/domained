@@ -210,7 +210,7 @@ def dnsgen():
     print("\n\n\033[1;31mRunning dnsgen \n\033[1;37m")
     starttime = datetime.datetime.now()
 
-    dnsgen_massdns_file = "{}_dnsgen_massdns.txt".format(output_base)
+    dnsgen_extra_massdns_file = "{}_dnsgen_massdns.txt".format(output_base)
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
@@ -232,8 +232,9 @@ def dnsgen():
         os.system("mv {} {}".format(masstemp2, masstemp1))
 
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
-    os.system("sort -u {} -o {}".format(masstemp, dnsgen_massdns_file))
-    os.system("cat {} >> {}".format(dnsgen_massdns_file, subdomainAllFile))
+    os.system("sort -u {} -o {}".format(masstemp, masstemp))
+    os.system("awk 'FNR==NR{a[NR]=$0;next;} $0!=a[FNR]' {} {} > {}".format(masstemp, subdomainAllFile, dnsgen_extra_massdns_file))
+    os.system("cat {} >> {}".format(dnsgen_extra_massdns_file, subdomainAllFile))
     os.system("rm {} {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
 
@@ -514,7 +515,6 @@ def options():
         if mainWildcard == NOWILD:
             massdnsBruteLoop(domain, findSoS=False)
             stripWildCards()
-            return
             dnsgen()
         # findSubsOfSubs()
         # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
