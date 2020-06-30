@@ -210,7 +210,7 @@ def dnsgen():
     print("\n\n\033[1;31mRunning dnsgen \n\033[1;37m")
     starttime = datetime.datetime.now()
 
-    dnsgen_extra_massdns_file = "{}_dnsgen_massdns.txt".format(output_base)
+    dnsgen_extra_massdns_file = "{}_dnsgen_extra_massdns.txt".format(output_base)
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
@@ -235,7 +235,7 @@ def dnsgen():
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
     os.system("grep -v -f {} {} > {}".format(subdomainAllFile, masstemp, dnsgen_extra_massdns_file))
     os.system("cat {} >> {}".format(dnsgen_extra_massdns_file, subdomainAllFile))
-    os.system("rm {} {}".format(masstemp1, masstemp))
+    # os.system("rm {} {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
 
     endtime = datetime.datetime.now()
@@ -334,7 +334,7 @@ def massdnsPassive():
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))   
-    massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 1000 -w {}".format(
+    massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 2000 -w {}".format(
         subdomainAllFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
@@ -353,7 +353,7 @@ def stripWildCards():
     os.system("cp {} {}tmp".format(subdomainAllFile, subdomainAllFile))
     os.system("awk '{{print \"xxfeedcafejfoiaeowjnbnmcoampqoqp.\"$0}}' {}tmp > {}tmpp".format(subdomainAllFile, subdomainAllFile))
     os.system("rm {}tmp".format(subdomainAllFile))
-    stripmassdnsCMD = "cat {}tmpp | {} -r popular_resolvers.txt -t A -o S -s 500 -w {}".format(
+    stripmassdnsCMD = "cat {}tmpp | {} -r popular_resolvers.txt -t A -o S -s 1000 -w {}".format(
         subdomainAllFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
