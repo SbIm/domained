@@ -510,8 +510,8 @@ def options():
         upgradeFiles()
         return
     if domain:
-        findSubsOfSubs()
-        return 
+        # findSubsOfSubs()
+        # return 
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
         notified("domained Script Started", "domained Script Started for {}".format(domain))
