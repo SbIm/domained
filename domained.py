@@ -254,7 +254,7 @@ def findSubsOfSubs():
         for sub in noWcSubs:
             level = sub.count(".")
             if level < 4:
-                massdnsBruteLoop(sub, findSoS=True)
+                massdnsBruteLoop(sub.replace('\n',''), findSoS=True)
 
     tmpfile = subsOfSubsFile + "tmp"
     os.system("sort -u {} -o {}".format(subsOfSubsFile, subsOfSubsFile))
@@ -266,7 +266,7 @@ def findSubsOfSubs():
         for tmp in tmps:
             level = tmp.count(".")
             if tmp not in noWcSubs and level < 4:
-                massdnsBruteLoop(tmp, findSoS=True)
+                massdnsBruteLoop(tmp.replace('\n',''), findSoS=True)
     # do dnsgen
 
     os.system("sort -u {} -o {}".format(subsOfSubsFile, subsOfSubsFile))
@@ -299,8 +299,6 @@ def massdnsBruteLoop(massdomain, findSoS):
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
-    print(massdnsBruteLoopCMD)
-    return
     os.system(massdnsBruteLoopCMD)
     num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
