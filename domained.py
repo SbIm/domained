@@ -509,8 +509,8 @@ def options():
         upgradeFiles()
         return
     if domain:
-        # dnsgen()
-        # return
+        findSubsOfSubs()
+        return
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
         notified("domained Script Started", "domained Script Started for {}".format(domain))
@@ -521,13 +521,8 @@ def options():
             massdnsBruteLoop(domain, findSoS=False)
             stripWildCards()
             dnsgen()
-        # findSubsOfSubs()
-        # os.system("sort -u {} -o sorted_temp.txt".format(subdomainAllFile))
-        # os.system("mv sorted_temp.txt {}".format(subdomainAllFile))
+        findSubsOfSubs()
 
-
-        # generateUrl()
-        # subdomainUrlUniqueFile = "{}-all4one-url-unique.txt".format(output_base)
         os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}".format(subdomainAllFile, urlProbesFile))
         eyewitness(urlProbesFile)
         notified("domained Script Finished", "domained Script Finished for {}".format(domain))
