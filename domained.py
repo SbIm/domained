@@ -284,7 +284,8 @@ def massdnsBruteLoop(massdomain, findSoS):
     starttime = datetime.datetime.now()
 
     if findSoS:
-        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt")
+        # word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt")
+        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
         output_file = subsOfSubsFile
     else:
         word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
@@ -510,7 +511,7 @@ def options():
         return
     if domain:
         findSubsOfSubs()
-        return
+        return 
         os.system("rm -dfr output/{}".format(domain))
         os.system("mkdir output/{}".format(domain))
         notified("domained Script Started", "domained Script Started for {}".format(domain))
