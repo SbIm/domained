@@ -284,8 +284,8 @@ def massdnsBruteLoop(massdomain, findSoS):
     starttime = datetime.datetime.now()
 
     if findSoS:
-        # word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt")
-        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
+        word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/subdomains-top1million-110000.txt")
+        # word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
         output_file = subsOfSubsFile
     else:
         word_file = os.path.join(script_path, "bin/SecLists/Discovery/DNS/all-temp.txt")
@@ -299,6 +299,8 @@ def massdnsBruteLoop(massdomain, findSoS):
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
+    print(massdnsBruteLoopCMD)
+    return
     os.system(massdnsBruteLoopCMD)
     num_line1 = sum(1 for line in open(masstemp1))
     endtime = datetime.datetime.now()
