@@ -364,6 +364,7 @@ def stripWildCards():
         masstemp1,
     )
     os.system(stripmassdnsCMD)
+    exit()
     os.system("rm {}tmpp".format(subdomainAllFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
