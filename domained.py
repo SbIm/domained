@@ -269,7 +269,10 @@ def findSubsOfSubs():
                 massdnsBruteLoop(tmp.replace('\n',''), findSoS=True)
     # do dnsgen
 
+    os.system("rm {}".format(tmpfile))
     os.system("sort -u {} -o {}".format(subsOfSubsFile, subsOfSubsFile))
+    os.system("grep -v -f {} {} > {}".format(subdomainAllFile, subsOfSubsFile, tmpfile))
+    os.system("mv {} {} ".format(tmpfile, subsOfSubsFile))
     os.system("cat {} >> {}".format(subsOfSubsFile, subdomainAllFile))
     os.system("rm {}".format(tmpfile))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
