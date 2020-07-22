@@ -358,13 +358,13 @@ def stripWildCards():
     os.system("cp {} {}tmp".format(subdomainAllFile, subdomainAllFile))
     os.system("awk '{{print \"xxfeedcafejfoiaeowjnbnmcoampqoqp.\"$0}}' {}tmp > {}tmpp".format(subdomainAllFile, subdomainAllFile))
     os.system("rm {}tmp".format(subdomainAllFile))
+    exit()
     stripmassdnsCMD = "cat {}tmpp | {} -r popular_resolvers.txt -t A -o S -s 1000 -w {}".format(
         subdomainAllFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
     os.system(stripmassdnsCMD)
-    exit()
     os.system("rm {}tmpp".format(subdomainAllFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
@@ -505,6 +505,10 @@ def eyewitness(filename):
         output_base,
     )
     os.system(EWHTTPScriptIPS)
+
+def refreshResolvers():
+    os.system("git clone https://github.com/danielmiessler/SecLists.git ./bin/SecLists")
+
 
 def options():
     if fresh:
