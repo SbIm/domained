@@ -88,61 +88,6 @@ newpath = r"output"
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-def stripMassdnsFile(massdnsres, output, cnameOutput, wilds):
-    global wildList
-    with open(massdnsres, "r") as f:
-        massdnsResLines = set(f)
-    with open(wilds, "r") as f:
-        wildLines = f.readlines()
-        wildLines.sort(key=lambda x: len(x))
-        cleanWildLines = []
-        if len(wildLines) > 0:
-            cleanWildLines.append(wildLines[0])
-        for wildLine in wildLines:
-            writeThisLine = True
-            for cleanWild in cleanWildLines:
-                if cleanWild[33:] in wildLine[33:]:
-                    writeThisLine = False
-                    break
-            if writeThisLine:
-                cleanWildLines.append(wildLine)
-    with open(wilds, "w+") as f:
-        for cleanWild in cleanWildLines:
-            f.writelines(cleanWild)
-
-    # pdb.set_trace()
-
-    cnameOut = open(cnameOutput, "a")
-    with open(output, "a") as f:
-        for line in massdnsResLines:
-            hosts = line
-            line_data = line
-            if " A 127.0.0.1" in hosts:
-                continue
-            hosts = hosts.split()[0]
-            if hosts.endswith("."):
-                hosts = hosts[:-1]
-            if not hosts.endswith(domain):
-                continue
-            if hosts.startswith("xxfeedcafejfoiaeowjnbnmcoampqoqp.") and line_data in cleanWildLines:
-                hosts = hosts[33:]
-                if "CNAME" in line_data:
-                    cnameOut.writelines(hosts + "\n")
-                f.writelines(hosts + "\n")
-                continue
-            wild_line_data = line_data.split(".", 1)[1]
-            writeThisLine = True
-            for cleanWild in cleanWildLines:
-                if cleanWild[33:] in wild_line_data:
-                    writeThisLine = False
-                    break
-            if not writeThisLine:
-                continue
-            if "CNAME" in line_data:
-                cnameOut.writelines(hosts + "\n")
-            f.writelines(hosts + "\n")
-    cnameOut.close()
-
 def check_gopath(cmd, install_repo):
     if os.environ["GOPATH"]:
         execs = os.listdir(os.path.join(os.environ["GOPATH"], "bin"))
@@ -274,7 +219,6 @@ def findSubsOfSubs():
     os.system("grep -v -f {} {} > {}".format(subdomainAllFile, subsOfSubsFile, tmpfile))
     os.system("mv {} {} ".format(tmpfile, subsOfSubsFile))
     os.system("cat {} >> {}".format(subsOfSubsFile, subdomainAllFile))
-    os.system("rm {}".format(tmpfile))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
     endtime = datetime.datetime.now()
     d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
@@ -507,7 +451,7 @@ def eyewitness(filename):
     )
     os.system(EWHTTPScriptIPS)
 
-def refreshResolvers():
+def refreshPopResolvers():
     os.system("git clone https://github.com/danielmiessler/SecLists.git ./bin/SecLists")
 
 
@@ -552,6 +496,7 @@ if __name__ == "__main__":
     subsOfSubsFile = "{}_sos.txt".format(output_base)
     noWildcardsFile = "{}_noWildcards.txt".format(output_base)
     wildcardsFile = "{}_wildcards.txt".format(output_base)
+    cnameFile = "{}_cname.txt".format(output_base)
     staticsFile = "{}_reconStatics.txt".format(output_base)
     secure = args.secure
     bruteforce = args.bruteforce
