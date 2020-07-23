@@ -368,7 +368,8 @@ def stripWildCards():
     os.system("rm {}tmpp".format(subdomainAllFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
-    os.system("cat {} | cut -d '.' -f 2- > {}".format(masstemp, wildcardsFile))  # 会删掉wildcardsFile中原有内容
+    # delete contents in wildcardsFile
+    os.system("cat {} | cut -d '.' -f 2- > {}".format(masstemp, wildcardsFile))
        
     stripWildList = []
     with open(wildcardsFile, "r") as f:
