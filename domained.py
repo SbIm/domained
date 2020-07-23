@@ -381,6 +381,7 @@ def stripCnameWildCards():
                 nwf.writelines(sub)
     nwf.close()
     os.system("mv {} {}".format(masstemp, cnameFile))
+    print(wildList)
 
 def notified(sub, msg):
     notifySub = sub
@@ -503,6 +504,7 @@ def options():
             dnsgen()
         findSubsOfSubs()
         stripCnameWildCards()
+        exit()
         os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}".format(subdomainAllFile, urlProbesFile))
         eyewitness(urlProbesFile)
         notified("domained Script Finished", "domained Script Finished for {}".format(domain))
