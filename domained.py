@@ -159,6 +159,7 @@ def dnsgen():
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
+    masstemp3 = "{}_massdns_temp3.txt".format(output_base)
     dnsgenCMD = "cat {} | dnsgen - | {} -r resolvers.txt -t A -o S -w {}".format(
         noWildcardsFile,
         os.path.join(script_path, "bin/massdns/bin/massdns"),
@@ -176,12 +177,14 @@ def dnsgen():
         os.system(massdnsBruteLoopCMD)
         os.system("mv {} {}".format(masstemp2, masstemp1))
 
+    os.system("cat {} | grep CNAME > {}".format(masstemp1, masstemp3))
+    os.system("cat {} | awk -F '. ' '{{print $1}}' >> {}".format(masstemp3, cnameFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
     os.system("grep -v -f {} {} > {}".format(subdomainAllFile, masstemp, dnsgen_extra_massdns_file))
     # need strip it again
     os.system("cat {} >> {}".format(dnsgen_extra_massdns_file, subdomainAllFile))
-    os.system("rm {} {}".format(masstemp1, masstemp))
+    os.system("rm {} {} {}".format(masstemp1, masstemp, masstemp3))
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
 
     endtime = datetime.datetime.now()
@@ -240,6 +243,7 @@ def massdnsBruteLoop(massdomain, findSoS):
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
     masstemp2 = "{}_massdns_temp2.txt".format(output_base)
+    masstemp3 = "{}_massdns_temp3.txt".format(output_base)
     massdnsBruteLoopCMD = "python bin/massdns/scripts/subbrute.py {} {} | {} -r resolvers.txt -t A -o S -w {}".format(
         word_file,
         massdomain,
@@ -269,10 +273,12 @@ def massdnsBruteLoop(massdomain, findSoS):
         num_line1 = num_line2
         os.system("mv {} {}".format(masstemp2, masstemp1))
 
+    os.system("cat {} | grep CNAME > {}".format(masstemp1, masstemp3))
+    os.system("cat {} | awk -F '. ' '{{print $1}}' >> {}".format(masstemp3, cnameFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))
     os.system("cat {} >> {}".format(masstemp, output_file))
-    os.system("rm {} {}".format(masstemp1, masstemp))
+    os.system("rm {} {} {}".format(masstemp1, masstemp, masstemp3))
     if not findSoS:
         os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))
         d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
@@ -282,6 +288,7 @@ def massdnsBruteLoop(massdomain, findSoS):
 def massdnsPassive():
     masstemp = "{}_massdns_temp.txt".format(output_base)
     masstemp1 = "{}_massdns_temp1.txt".format(output_base)
+    masstemp3 = "{}_massdns_temp3.txt".format(output_base)
     os.system("sort -u {} -o {}".format(subdomainAllFile, subdomainAllFile))   
     massdnsPassiveCMD = "cat {} | {} -r popular_resolvers.txt -t A -o S -s 2000 -w {}".format(
         subdomainAllFile,
@@ -289,10 +296,12 @@ def massdnsPassive():
         masstemp1,
     )
     os.system(massdnsPassiveCMD)
+    os.system("cat {} | grep CNAME > {}".format(masstemp1, masstemp3))
+    os.system("cat {} | awk -F '. ' '{{print $1}}' >> {}".format(masstemp3, cnameFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
     os.system("sort -u {} -o {}".format(masstemp, masstemp))    
     os.system("mv {} {}".format(masstemp, subdomainAllFile))
-    os.system("rm {}".format(masstemp1))
+    os.system("rm {} {}".format(masstemp1, masstemp3))
     d_count = int(subprocess.check_output('wc -l {}'.format(subdomainAllFile), shell=True).split()[0])
     os.system("echo Complete massdnsPassive with {} subs in all >> {}".format(d_count, staticsFile))
 
