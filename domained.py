@@ -365,6 +365,23 @@ def stripWildCards():
     os.system("rm {}".format(subdomainAllFile))
     os.system("cat {} {} > {}".format(noWildcardsFile, wildcardsFile, subdomainAllFile))
 
+def stripCnameWildCards():
+    masstemp = "{}_massdns_temp.txt".format(output_base)
+    # create none wild subs file
+    nwf = open(masstemp, "w+")
+    with open(cnameFile, "r") as f:
+        subsList = f.readlines()
+        for sub in subsList:
+            wildCheck = False
+            for wildSub in wildList:
+                if wildSub in sub:
+                    wildCheck = True
+                    break
+            if not wildCheck:
+                nwf.writelines(sub)
+    nwf.close()
+    os.system("mv {} {}".format(masstemp, cnameFile))
+
 def notified(sub, msg):
     notifySub = sub
     notifyMsg = msg
@@ -485,7 +502,7 @@ def options():
             stripWildCards()
             dnsgen()
         findSubsOfSubs()
-
+        stripCnameWildCards()
         os.system("cat {} | httprobe -c 200 --prefer-https -p http:8080 -p https:8443  > {}".format(subdomainAllFile, urlProbesFile))
         eyewitness(urlProbesFile)
         notified("domained Script Finished", "domained Script Finished for {}".format(domain))
