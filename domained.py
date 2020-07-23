@@ -363,6 +363,7 @@ def stripWildCards():
         os.path.join(script_path, "bin/massdns/bin/massdns"),
         masstemp1,
     )
+    
     os.system(stripmassdnsCMD)
     os.system("rm {}tmpp".format(subdomainAllFile))
     os.system("cat {} | awk -F '. ' '{{print $1}}' > {}".format(masstemp1, masstemp))
